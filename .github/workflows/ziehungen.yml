@@ -1,0 +1,50 @@
+# Holt nach jeder Eurojackpot-Ziehung (Dienstag und Freitag, ca. 21 Uhr) die neuen Zahlen von lotto.de und legt sie
+# in ziehungen.csv der Browser-Version (Branch gh-pages) ab. Mehrere Zeitpunkte, weil GitHub geplante Laeufe oft
+# verspaetet startet und lotto.de die Zahlen nicht immer sofort hat. Von Hand starten: Actions -> Ausfuehren.
+name: Ziehungen aktualisieren
+
+on:
+  schedule:
+    - cron: '20 20 * * 2,5'
+    - cron: '40 21 * * 2,5'
+    - cron: '30 23 * * 2,5'
+    - cron: '30 5 * * 3,6'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: ziehungen
+  cancel-in-progress: false
+
+jobs:
+  holen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: werkzeug
+          sparse-checkout: .github
+      - uses: actions/checkout@v5
+        with:
+          ref: gh-pages
+          path: seite
+      - name: Neue Ziehungen holen
+        run: python3 werkzeug/.github/ziehungen.py seite/ziehungen.csv
+      - name: Speichern
+        working-directory: seite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet; then
+            echo "Nichts Neues."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Neue Ziehungen"
+          git push
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" >/dev/null || true
