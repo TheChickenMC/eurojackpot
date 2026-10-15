@@ -26,8 +26,19 @@ enum Selbsttest {
         return url
     }
 
+    /// „-protokoll <datei>“: direkt in diese Datei schreiben – über stderr kamen die Zeilen nur schubweise an.
+    private static let datei: FileHandle? = {
+        guard let pfad = wert("-protokoll"), FileManager.default.createFile(atPath: pfad, contents: nil) else { return nil }
+        return FileHandle(forWritingAtPath: pfad)
+    }()
+
     static func melden(_ text: String) {
         guard an else { return }
-        FileHandle.standardError.write(Data((text + "\n").utf8))
+        let daten = Data((text + "\n").utf8)
+        if let datei = datei {
+            datei.write(daten)
+        } else {
+            FileHandle.standardError.write(daten)
+        }
     }
 }

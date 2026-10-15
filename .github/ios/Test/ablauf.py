@@ -11,9 +11,12 @@ BUNDLE = "lotto.eurojackpot.tabelle"
 udid, lauf, ordner = sys.argv[1], sys.argv[2], sys.argv[3]
 extra = sys.argv[4:]
 os.makedirs(os.path.join(ordner, "fotos"), exist_ok=True)
+# die App schreibt ihr Protokoll direkt in diese Datei ("-protokoll"); klappt das nicht, landet es in stderr
 protokoll = os.path.abspath(os.path.join(ordner, "lauf-%s.txt" % lauf))
-if os.path.exists(protokoll):
-    os.remove(protokoll)
+fehlerausgabe = protokoll + ".stderr"
+for alt in (protokoll, fehlerausgabe):
+    if os.path.exists(alt):
+        os.remove(alt)
 
 
 def simctl(*args, pruefen=True):
@@ -28,14 +31,15 @@ def foto(name):
 
 simctl("terminate", udid, BUNDLE, pruefen=False)
 simctl("ui", udid, "appearance", "light", pruefen=False)
-start = simctl("launch", "--terminate-running-process", "--stderr=" + protokoll, "--stdout=" + protokoll + ".out",
-               udid, BUNDLE, "-selbsttest", lauf, *extra)
+start = simctl("launch", "--terminate-running-process", "--stderr=" + fehlerausgabe, "--stdout=" + protokoll + ".stdout",
+               udid, BUNDLE, "-selbsttest", lauf, "-protokoll", protokoll, *extra)
 print("Lauf %s gestartet: %s" % (lauf, start.stdout.strip()), flush=True)
 pid = start.stdout.strip().split(":")[-1].strip()
 
 ergebnis = 2
 spaeter = []  # (Zeitpunkt, Name) fuer "FOTO-NACH"
 ende = time.time() + 900
+quelle = None
 gelesen = 0
 rest = ""
 fertig = False
@@ -44,9 +48,15 @@ while time.time() < ende and not fertig:
     for zeitpunkt, name in [s for s in spaeter if s[0] <= time.time()]:
         foto(name)
         spaeter.remove((zeitpunkt, name))
-    if not os.path.exists(protokoll):
-        continue
-    with open(protokoll, "rb") as f:
+    if quelle is None:
+        if os.path.exists(protokoll):
+            quelle = protokoll
+        elif os.path.exists(fehlerausgabe) and os.path.getsize(fehlerausgabe) > 0 and time.time() > ende - 870:
+            quelle = fehlerausgabe
+            print("   [Protokoll kommt ueber stderr]", flush=True)
+        else:
+            continue
+    with open(quelle, "rb") as f:
         f.seek(gelesen)
         neu = f.read()
     gelesen += len(neu)

@@ -14,8 +14,12 @@ PROTOKOLL = os.path.join(ordner, "anfragen.txt")
 ANTWORT = "Hallo! Ich bin die Online-KI aus dem Test. Umlaute: äöü ß – „Zitat“."
 
 
+def viertel(text):
+    return [text[i * len(text) // 4:(i + 1) * len(text) // 4] for i in range(4)]
+
+
 def claude_sse(text):
-    teile = [text[: len(text) // 2], text[len(text) // 2:]]
+    teile = viertel(text)
     s = 'event: message_start\ndata: {"type":"message_start","message":{"id":"m","content":[]}}\n\n'
     s += 'event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}\n\n'
     for t in teile:
@@ -27,7 +31,7 @@ def claude_sse(text):
 
 
 def openai_sse(text):
-    teile = [text[: len(text) // 2], text[len(text) // 2:]]
+    teile = viertel(text)
     s = 'data: {"choices":[{"index":0,"delta":{"role":"assistant","content":""}}]}\n\n'
     for t in teile:
         s += "data: " + json.dumps({"choices": [{"index": 0, "delta": {"content": t}}]}, ensure_ascii=False) + "\n\n"
@@ -56,12 +60,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(daten)))
         self.end_headers()
         if stueckweise:
-            # in zwei Teilen mit Pause, damit die Seite Zwischenstaende sieht
-            mitte = len(daten) // 2
-            self.wfile.write(daten[:mitte])
-            self.wfile.flush()
-            time.sleep(0.4)
-            self.wfile.write(daten[mitte:])
+            # in vier Teilen mit Pausen, damit die Seite Zwischenstaende sieht
+            for i in range(4):
+                if i:
+                    time.sleep(0.5)
+                self.wfile.write(daten[i * len(daten) // 4:(i + 1) * len(daten) // 4])
+                self.wfile.flush()
         else:
             self.wfile.write(daten)
 

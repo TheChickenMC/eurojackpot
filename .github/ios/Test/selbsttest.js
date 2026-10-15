@@ -154,12 +154,16 @@
     await pause(1000);
     await warten(() => blasen().length > 0 && !$('sendenKnopf').disabled, 30);
     pruefen($('kiZeile').textContent.startsWith('Online-KI'), 'Assistent-Zeile: ' + $('kiZeile').textContent);
-    let zwischendurch = false;
+    // die Attrappe schickt die Antwort in vier Teilen mit Pausen – erscheint sie Stück für Stück?
+    const t0 = Date.now();
+    const stufen = [];
     const antwort = await frage('erzähl mir einen witz', 'Online-KI aus dem Test', 90, (a) => {
-      if (a.includes('Hallo') && !a.includes('Zitat')) zwischendurch = true;
+      const n = a.includes('Hallo') ? a.length : 0;
+      if (n && (!stufen.length || stufen[stufen.length - 1][1] !== n)) stufen.push([((Date.now() - t0) / 1000).toFixed(1), n]);
     });
     pruefen(antwort.includes('Umlaute: äöü ß – „Zitat“.'), 'Umlaute und Anführungszeichen kommen richtig an');
-    melden('INFO   Antwort erschien ' + (zwischendurch ? 'Stück für Stück' : 'auf einmal'));
+    melden('INFO   Antwort erschien ' + (stufen.length > 1 ? 'Stück für Stück' : 'auf einmal') + ': '
+      + stufen.map(([s, n]) => s + ' s ' + n + ' Zeichen').join(', '));
     await foto('07-online-ki');
 
     // mitten in einer Frage „Neu“ – danach muss die nächste Frage normal klappen
