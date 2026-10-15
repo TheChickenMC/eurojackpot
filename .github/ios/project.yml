@@ -1,0 +1,56 @@
+# Xcode-Projekt der iPhone-App – XcodeGen macht daraus EuroJackpot.xcodeproj (auf dem Mac bei GitHub, siehe
+# .github/workflows/ios.yml). Der Ordner Inhalt (die fertige Browser-Version) kommt erst beim Bauen dazu.
+name: EuroJackpot
+options:
+  deploymentTarget:
+    iOS: "15.0"
+  developmentLanguage: de
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  EuroJackpot:
+    type: application
+    platform: iOS
+    sources:
+      - path: Quellen
+      - path: Assets.xcassets
+      - path: Inhalt
+        type: folder
+      - path: Test/selbsttest.js
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: lotto.eurojackpot.tabelle
+        PRODUCT_NAME: EuroJackpot
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: NO
+        ENABLE_BITCODE: NO
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Eurojackpot
+        CFBundleDevelopmentRegion: de
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSRequiresIPhoneOS: true
+        ITSAppUsesNonExemptEncryption: false
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UILaunchScreen:
+          UIColorName: Startfarbe
+        UIStatusBarStyle: UIStatusBarStyleLightContent
+        UIViewControllerBasedStatusBarAppearance: true
+        UIRequiredDeviceCapabilities: [arm64]
+        UISupportedInterfaceOrientations~iphone: [UIInterfaceOrientationPortrait]
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    scheme: {}

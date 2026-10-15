@@ -1,0 +1,160 @@
+# Baut die iPhone-App (EuroJackpot.ipa) auf einem Mac von GitHub - zu Hause gibt es keinen Mac. veroeffentlichen.bat
+# startet das nach jedem Release (werkzeuge\IphoneApp.ps1). Die App ist ein Rahmen um die Browser-Version (Branch
+# gh-pages, dieselbe Rechnung wie am PC und am Handy). Vor dem Hochladen klickt sich ein Selbsttest im iPhone-Simulator
+# durch die App - die Bildschirmfotos liegen danach beim Lauf unter "Artifacts" (iphone-test).
+name: iPhone-App
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versionsnummer, z. B. 2.12 (beim Hochladen muss es das Release v<Version> schon geben)'
+        required: true
+      build:
+        description: 'Build-Nummer, nur Ziffern (dieselbe wie in update.txt)'
+        required: true
+      inhalt:
+        description: 'Branch mit der fertigen Browser-Version'
+        default: gh-pages
+      hochladen:
+        description: 'EuroJackpot.ipa an das Release haengen und die Quelle apps.json aktualisieren'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: iphone-app
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      VERSION: ${{ inputs.version }}
+      BUILD: ${{ inputs.build }}
+      INHALT: ${{ inputs.inhalt }}
+      GH_TOKEN: ${{ github.token }}
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+    steps:
+      - name: Eingaben pruefen
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "Ungueltige Version: $VERSION"; exit 1; }
+          [[ "$BUILD" =~ ^[0-9]{1,15}$ ]] || { echo "Ungueltige Build-Nummer: $BUILD"; exit 1; }
+          [[ "$INHALT" =~ ^[A-Za-z0-9._/-]+$ ]] || { echo "Ungueltiger Branch: $INHALT"; exit 1; }
+
+      - uses: actions/checkout@v5
+        with:
+          path: quelle
+          sparse-checkout: .github
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.inhalt }}
+          path: inhalt
+
+      - name: Projekt zusammenstellen
+        run: |
+          cp -R quelle/.github/ios app
+          mkdir app/Inhalt
+          rsync -a --exclude '.git' --exclude '.nojekyll' --exclude 'sw.js' --exclude 'apps.json' --exclude '*.md' inhalt/ app/Inhalt/
+          grep -q "const VERSION = '$VERSION';" app/Inhalt/app.js || { echo "Die Browser-Version in $INHALT ist nicht Version $VERSION"; exit 1; }
+          grep -q "EJ_APP" app/Inhalt/app.js || { echo "Die Browser-Version kennt die App noch nicht (EJ_APP fehlt)"; exit 1; }
+          ls -la app/Inhalt
+          xcodebuild -version
+          brew install xcodegen
+          cd app && xcodegen generate
+
+      - name: Fuer den Simulator bauen
+        working-directory: app
+        run: |
+          xcodebuild -quiet -project EuroJackpot.xcodeproj -scheme EuroJackpot -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ../dd-sim \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD" CODE_SIGNING_ALLOWED=NO build
+
+      - name: Im iPhone-Simulator testen
+        run: |
+          UDID=$(python3 app/Test/geraet.py)
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          mkdir -p netz ergebnis
+          cp inhalt/ziehungen.csv netz/
+          # Versionsliste mit einer sehr neuen Version: mit "-build 1" muss der Update-Hinweis kommen
+          echo '{"name":"Test","identifier":"test","apps":[{"bundleIdentifier":"lotto.eurojackpot.tabelle","versions":[{"version":"99.0","buildVersion":"99999999999"}]}]}' > netz/apps.json
+          python3 app/Test/kimock.py 8124 ergebnis/ki > ergebnis/kimock.txt 2>&1 &
+          python3 -m http.server 8125 --bind 127.0.0.1 --directory netz > ergebnis/netz.txt 2>&1 &
+          NETZ=$!
+          sleep 2
+          xcrun simctl install "$UDID" dd-sim/Build/Products/Release-iphonesimulator/EuroJackpot.app
+          set +e
+          python3 app/Test/ablauf.py "$UDID" 1 ergebnis -netzbasis http://127.0.0.1:8125/ -kibasis http://127.0.0.1:8124/ -build 1
+          EINS=$?
+          # Lauf 2 ohne Server: Ziehungen muessen aus dem Speicher kommen
+          kill $NETZ
+          python3 app/Test/ablauf.py "$UDID" 2 ergebnis -netzbasis http://127.0.0.1:8125/ -kibasis http://127.0.0.1:8124/
+          ZWEI=$?
+          echo "Lauf 1: $EINS, Lauf 2: $ZWEI (0 = ok)"
+          [ $EINS -eq 0 ] && [ $ZWEI -eq 0 ]
+
+      - name: Absturzberichte einsammeln
+        if: always()
+        run: |
+          mkdir -p ergebnis/abstuerze
+          find ~/Library/Logs/DiagnosticReports -name 'EuroJackpot*' -exec cp {} ergebnis/abstuerze/ \; 2>/dev/null || true
+      - name: Testergebnisse sichern
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: iphone-test
+          path: ergebnis
+          if-no-files-found: ignore
+
+      - name: Fuers iPhone bauen
+        working-directory: app
+        run: |
+          xcodebuild -quiet -project EuroJackpot.xcodeproj -scheme EuroJackpot -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath ../dd-geraet \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+          cd ..
+          mkdir -p ipa/Payload
+          cp -R dd-geraet/Build/Products/Release-iphoneos/EuroJackpot.app ipa/Payload/
+          rm -f ipa/Payload/EuroJackpot.app/selbsttest.js
+          # SideStore/AltStore signieren beim Installieren mit der eigenen Apple-ID neu
+          codesign --force --sign - --timestamp=none ipa/Payload/EuroJackpot.app
+          (cd ipa && zip -qry ../EuroJackpot.ipa Payload)
+          ls -la EuroJackpot.ipa
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' -c 'Print :CFBundleVersion' ipa/Payload/EuroJackpot.app/Info.plist
+      - name: IPA sichern
+        uses: actions/upload-artifact@v5
+        with:
+          name: EuroJackpot-ipa
+          path: EuroJackpot.ipa
+
+      - uses: actions/checkout@v5
+        if: inputs.hochladen
+        with:
+          ref: gh-pages
+          path: seiten
+      - name: Ans Release haengen und Quelle aktualisieren
+        if: inputs.hochladen
+        run: |
+          gh release view "v$VERSION" -R "$GITHUB_REPOSITORY" --json body -q .body > notizen.txt
+          gh release upload "v$VERSION" EuroJackpot.ipa --clobber -R "$GITHUB_REPOSITORY"
+          python3 app/quelle.py seiten/apps.json "$VERSION" "$BUILD" EuroJackpot.ipa "$GITHUB_REPOSITORY" notizen.txt
+          cd seiten
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps.json
+          git commit -m "iPhone-App $VERSION"
+          GESCHAFFT=
+          for i in 1 2 3 4 5; do
+            if git push; then GESCHAFFT=1; break; fi
+            sleep 5
+            git pull --rebase
+          done
+          [ -n "$GESCHAFFT" ]
+          gh api -X POST "repos/$GITHUB_REPOSITORY/pages/builds" >/dev/null || true
