@@ -1,7 +1,8 @@
 import Foundation
+import WebKit
 
 /// Nur für den automatischen Test im iPhone-Simulator (.github/ios/Test/ablauf.py), sonst ohne Wirkung.
-/// Start mit „-selbsttest 1“: Die App führt selbsttest.js aus und schreibt jeden Schritt nach stderr.
+/// Start mit „-selbsttest 1 -protokoll <datei>“: Die App führt selbsttest.js aus und schreibt jeden Schritt in die Datei.
 /// „-netzbasis http://127.0.0.1:…/“ holt Ziehungen und Versionsliste von dort, „-kibasis http://127.0.0.1:…/“ leitet die
 /// Online-KI auf eine Attrappe um, „-build 1“ gibt eine alte Build-Nummer vor (dann muss der Update-Hinweis kommen).
 enum Selbsttest {
@@ -26,7 +27,6 @@ enum Selbsttest {
         return url
     }
 
-    /// „-protokoll <datei>“: direkt in diese Datei schreiben – über stderr kamen die Zeilen nur schubweise an.
     private static let datei: FileHandle? = {
         guard let pfad = wert("-protokoll"), FileManager.default.createFile(atPath: pfad, contents: nil) else { return nil }
         return FileHandle(forWritingAtPath: pfad)
@@ -40,5 +40,34 @@ enum Selbsttest {
         } else {
             FileHandle.standardError.write(daten)
         }
+    }
+
+    /// Bittet ablauf.py um ein Bildschirmfoto und meldet sich erst, wenn es gemacht ist (ablauf.py trägt den Namen in
+    /// „<protokoll>.fotos“ ein) – die ersten Fotos nach dem Hochfahren des Simulators dauern bis zu einer halben Minute.
+    static func foto(_ name: String, fertig: @escaping (Bool) -> Void) {
+        melden("FOTO " + name)
+        guard let pfad = wert("-protokoll") else {
+            fertig(false)
+            return
+        }
+        let ende = Date().addingTimeInterval(90)
+        func nachsehen() {
+            let erledigt = (try? String(contentsOfFile: pfad + ".fotos", encoding: .utf8))?
+                .split(separator: "\n").contains { $0 == name } ?? false
+            if erledigt || Date() > ende {
+                fertig(erledigt)
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { nachsehen() }
+            }
+        }
+        nachsehen()
+    }
+}
+
+/// Für selbsttest.js: `await webkit.messageHandlers.foto.postMessage(name)` wartet, bis das Foto gemacht ist.
+final class FotoBote: NSObject, WKScriptMessageHandlerWithReply {
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage,
+                               replyHandler: @escaping (Any?, String?) -> Void) {
+        Selbsttest.foto(String(describing: message.body)) { ok in replyHandler(ok, nil) }
     }
 }

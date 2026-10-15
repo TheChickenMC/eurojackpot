@@ -1,5 +1,5 @@
 // Selbsttest der iPhone-App im Simulator – läuft nur, wenn die App mit „-selbsttest <lauf>“ gestartet wird
-// (ios/Quellen/Selbsttest.swift). Jeder Schritt geht als Zeile an die App (stderr); ablauf.py liest mit:
+// (ios/Quellen/Selbsttest.swift). Jeder Schritt geht als Zeile an die App (Protokolldatei); ablauf.py liest mit:
 // „FOTO name“ = Bildschirmfoto, „FOTO-NACH s name“ = Foto nach s Sekunden, „DUNKEL“/„HELL“ = Erscheinungsbild umschalten,
 // „ENDE OK“ / „ENDE FEHLER n“ = fertig.
 // Lauf 1: frisch installiert, Ziehungen und Versionsliste vom Testserver, Online-KI über die Attrappe.
@@ -53,9 +53,19 @@
     return false;
   }
 
+  // wartet, bis ablauf.py das Foto gemacht hat (die ersten dauern im Simulator bis zu einer halben Minute)
   async function foto(name) {
-    melden('FOTO ' + name);
-    await pause(2500); // ablauf.py braucht etwa eine Sekunde für das Foto
+    const t = Date.now();
+    let ok = false;
+    try {
+      ok = await window.webkit.messageHandlers.foto.postMessage(name);
+    } catch (e) {
+      melden('FOTO ' + name);
+      await pause(2500);
+    }
+    if (ok) melden('       Foto nach ' + ((Date.now() - t) / 1000).toFixed(1) + ' s');
+    else melden('INFO   Foto ' + name + ' nicht bestätigt');
+    await pause(200);
   }
 
   async function erscheinung(dunkel) {

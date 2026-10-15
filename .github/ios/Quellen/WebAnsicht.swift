@@ -17,6 +17,7 @@ final class WebAnsicht: UIViewController, WKNavigationDelegate, WKUIDelegate {
         steuerung.addUserScript(WKUserScript(source: Self.appInfo(), injectionTime: .atDocumentStart, forMainFrameOnly: true))
         if Selbsttest.an {
             steuerung.add(bote, name: "protokoll")
+            steuerung.addScriptMessageHandler(FotoBote(), contentWorld: .page, name: "foto")
             if let datei = Bundle.main.url(forResource: "selbsttest", withExtension: "js"),
                let skript = try? String(contentsOf: datei, encoding: .utf8) {
                 // schon am Anfang, damit es auch Fehler beim Start der Seite mitbekommt – los geht es erst nach „load“

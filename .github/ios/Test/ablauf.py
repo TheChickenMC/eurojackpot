@@ -14,7 +14,9 @@ os.makedirs(os.path.join(ordner, "fotos"), exist_ok=True)
 # die App schreibt ihr Protokoll direkt in diese Datei ("-protokoll"); klappt das nicht, landet es in stderr
 protokoll = os.path.abspath(os.path.join(ordner, "lauf-%s.txt" % lauf))
 fehlerausgabe = protokoll + ".stderr"
-for alt in (protokoll, fehlerausgabe):
+# hier traegt foto() jedes fertige Foto ein - darauf wartet die App (Selbsttest.foto), bevor sie weitermacht
+quittungen = protokoll + ".fotos"
+for alt in (protokoll, fehlerausgabe, quittungen):
     if os.path.exists(alt):
         os.remove(alt)
 
@@ -27,10 +29,16 @@ def foto(name):
     ziel = os.path.join(ordner, "fotos", "%s-%s.png" % (lauf, name))
     r = simctl("io", udid, "screenshot", ziel, pruefen=False)
     print("   [Foto %s: %s]" % (name, "ok" if r.returncode == 0 else r.stderr.strip()), flush=True)
+    with open(quittungen, "a", encoding="utf-8") as f:
+        f.write(name + "\n")
 
 
 simctl("terminate", udid, BUNDLE, pruefen=False)
 simctl("ui", udid, "appearance", "light", pruefen=False)
+# das erste Foto nach dem Hochfahren dauert lange - einmal vorab, damit es den Test nicht aufhaelt
+t = time.time()
+simctl("io", udid, "screenshot", os.path.join(ordner, "aufwaermen.png"), pruefen=False)
+print("Aufwaerm-Foto nach %.1f s" % (time.time() - t), flush=True)
 start = simctl("launch", "--terminate-running-process", "--stderr=" + fehlerausgabe, "--stdout=" + protokoll + ".stdout",
                udid, BUNDLE, "-selbsttest", lauf, "-protokoll", protokoll, *extra)
 print("Lauf %s gestartet: %s" % (lauf, start.stdout.strip()), flush=True)
