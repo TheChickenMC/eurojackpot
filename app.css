@@ -1,0 +1,195 @@
+/* Eurojackpot im Browser (iPhone) – Farben wie PC und Android (gemeinsam/eurojackpot/Farben.java) */
+:root {
+  --kopf: #14213D; --kopf-verlauf: #26385F; --primaer: #14213D; --akzent: #14213D;
+  --flaeche: #FFFFFF; --hintergrund: #F2F4F8; --text: #1F2937; --grau: #6B7280; --hellgrau: #A3ABB8;
+  --linie: #E1E6EE; --knopf: #E9EDF3; --zeile-b: #F7F9FC; --marke: #FEF3C7; --marke-text: #B45309;
+  --fehler: #C62828; --blase-ich: #14213D; --leiste: rgba(255, 255, 255, 0.92); --schatten: rgba(15, 23, 42, 0.10);
+  --gruen: #1E9B4F; --rot: #D9343F; --gold: #F2B705; --erfolg: #E7F5EC;
+  --oben: env(safe-area-inset-top, 0px); --unten: env(safe-area-inset-bottom, 0px);
+  --leiste-hoehe: 56px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kopf: #0C1322; --kopf-verlauf: #17233D; --primaer: #3A5BA0; --akzent: #A9C1F5;
+    --flaeche: #19202C; --hintergrund: #10151D; --text: #E6E9EF; --grau: #9AA3B2; --hellgrau: #5F6878;
+    --linie: #2B3446; --knopf: #262F40; --zeile-b: #161C27; --marke: #3A2F12; --marke-text: #F2C14E;
+    --fehler: #FF8A80; --blase-ich: #3A5BA0; --leiste: rgba(22, 29, 40, 0.92); --schatten: rgba(0, 0, 0, 0.35);
+    --erfolg: #173326;
+  }
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--hintergrund); color: var(--text);
+  font: 16px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh; min-height: 100dvh; overscroll-behavior-y: none;
+}
+button { font: inherit; color: inherit; }
+svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+[hidden] { display: none !important; }
+
+/* ---------- Kopf */
+.kopf {
+  position: fixed; inset: 0 0 auto 0; z-index: 20; color: #fff;
+  background: linear-gradient(135deg, var(--kopf), var(--kopf-verlauf));
+  padding: calc(var(--oben) + 10px) 16px 12px;
+  box-shadow: 0 1px 8px var(--schatten);
+}
+.kopf-innen { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+.titel { flex: 1; min-width: 0; }
+.kopf h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.2px; }
+.untertitel { font-size: 13px; color: #AEBFDC; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kopf-knopf {
+  display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 18px; padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.14); color: #fff; font-size: 15px; font-weight: 600;
+}
+.kopf-knopf svg { width: 18px; height: 18px; }
+.kopf-knopf:active { background: rgba(255, 255, 255, 0.25); }
+
+/* ---------- Seiten */
+main { max-width: 760px; margin: 0 auto; padding: calc(var(--oben) + 78px) 16px calc(var(--unten) + var(--leiste-hoehe) + 24px); }
+body.mit-eingabe main { padding-bottom: calc(var(--unten) + var(--leiste-hoehe) + var(--eingabe-hoehe, 120px) + 16px); }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--grau); font-weight: 600; margin: 22px 4px 8px; }
+h2:first-child { margin-top: 4px; }
+.karte {
+  background: var(--flaeche); border-radius: 16px; padding: 14px 16px; box-shadow: 0 1px 3px var(--schatten);
+  border: 1px solid var(--linie);
+}
+.karte p { margin: 0 0 10px; }
+.karte p:last-child { margin-bottom: 0; }
+.klein { font-size: 13.5px; color: var(--grau); }
+.fuss { font-size: 12.5px; color: var(--grau); text-align: center; margin: 22px 8px 0; }
+
+/* ---------- Kugeln */
+.kugeln { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.kugel {
+  --d: 32px; width: var(--d); height: var(--d); border-radius: 50%; display: inline-grid; place-items: center; flex: none;
+  color: #fff; font-weight: 700; font-size: calc(var(--d) * 0.44); font-variant-numeric: tabular-nums;
+  background: var(--rot); position: relative;
+}
+.kugel.gerade { background: var(--gruen); }
+.kugel.euro { box-shadow: 0 0 0 3px var(--gold); margin: 0 3px; }
+.trenner + .kugel.euro { margin-left: 0; }
+.trenner { width: 6px; }
+button.kugel { border: 0; padding: 0; cursor: pointer; }
+button.kugel:active { transform: scale(0.92); }
+.kugel.treffer { outline: 3px solid var(--akzent); outline-offset: 2px; }
+
+/* ---------- Ziehungen */
+.naechste { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.naechste .text { flex: 1; min-width: 0; }
+.naechste .gross { font-weight: 700; font-size: 17px; }
+.naechste .knopf { flex: none; }
+.suche {
+  display: flex; align-items: center; gap: 8px; background: var(--flaeche); border: 1px solid var(--linie);
+  border-radius: 12px; padding: 0 12px; margin-bottom: 12px; color: var(--grau);
+}
+.suche svg { width: 18px; height: 18px; flex: none; }
+.suche input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); font-size: 16px; padding: 11px 0; outline: none; }
+.such-knopf { flex: none; border: 0; background: transparent; color: var(--grau); padding: 8px; margin-right: -6px; display: grid; place-items: center; cursor: pointer; }
+.such-knopf svg { width: 20px; height: 20px; }
+.such-knopf.dreht svg { animation: drehen 0.9s linear infinite; }
+@keyframes drehen { to { transform: rotate(360deg); } }
+.liste { background: var(--flaeche); border-radius: 16px; border: 1px solid var(--linie); overflow: hidden; box-shadow: 0 1px 3px var(--schatten); }
+.ziehung { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--linie); }
+.ziehung:first-child { border-top: 0; }
+.ziehung .datum { width: 76px; flex: none; font-size: 14px; line-height: 1.25; }
+.ziehung .datum b { display: block; font-size: 15px; }
+.ziehung .datum span { color: var(--grau); font-size: 12.5px; }
+/* alle 7 Zahlen in eine Zeile, auch auf schmalen Handys: 7 Kugeln + 40px Abstände passen in 100vw − 144px */
+.ziehung .kugeln { gap: 4px; flex-wrap: nowrap; }
+.ziehung .trenner { width: 4px; }
+.ziehung .kugel { --d: min(30px, calc((100vw - 186px) / 7)); }
+.ziehung .kugel.euro { margin: 0 3px; }
+.ziehung .trenner + .kugel.euro { margin-left: 0; }
+.leer { padding: 18px; text-align: center; color: var(--grau); }
+.mehr { display: block; width: 100%; margin-top: 12px; border: 0; background: var(--knopf); border-radius: 12px; padding: 12px; font-weight: 600; }
+
+/* ---------- Knöpfe und Felder */
+.knopf {
+  border: 0; border-radius: 12px; padding: 11px 16px; background: var(--knopf); color: var(--text); font-weight: 600; font-size: 15.5px;
+}
+.knopf.haupt { background: var(--primaer); color: #fff; }
+.knopf:disabled { opacity: 0.5; }
+.knopf:active:not(:disabled) { filter: brightness(0.92); }
+.knoepfe { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.feld { display: block; margin-top: 12px; }
+.feld span { display: block; font-size: 13px; color: var(--grau); margin: 0 2px 4px; }
+.feld input {
+  width: 100%; font-size: 16px; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--linie);
+  background: var(--zeile-b); color: var(--text); outline: none;
+}
+.feld input:focus { border-color: var(--akzent); }
+.meldung { margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-size: 14.5px; background: var(--marke); color: var(--marke-text); }
+.meldung.gut { background: var(--erfolg); color: var(--gruen); }
+.ki-status { margin-top: 12px; font-size: 14.5px; font-weight: 600; }
+.anbieter { margin: 0 0 10px; padding-left: 20px; }
+.anbieter li { margin: 3px 0; }
+.erklaerung { margin-bottom: 8px !important; }
+.schalter-zeile { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--linie); }
+.schalter-zeile input { appearance: none; -webkit-appearance: none; width: 51px; height: 31px; border-radius: 16px; background: var(--knopf); position: relative; margin: 0; flex: none; transition: background 0.2s; }
+.schalter-zeile input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.2s; }
+.schalter-zeile input:checked { background: var(--gruen); }
+.schalter-zeile input:checked::after { transform: translateX(20px); }
+.teilen-symbol { display: inline-block; width: 14px; height: 17px; vertical-align: -2px; border: 2px solid currentColor; border-top: 0; border-radius: 0 0 3px 3px; position: relative; margin: 0 2px; }
+.teilen-symbol::before { content: ""; position: absolute; left: 4px; top: -7px; width: 2px; height: 11px; background: currentColor; }
+
+/* ---------- Assistent */
+.ki-zeile { font-size: 13px; color: var(--grau); text-align: center; margin: -4px 0 8px; }
+.verlauf { display: flex; flex-direction: column; gap: 8px; }
+.blase {
+  max-width: 88%; padding: 10px 14px; border-radius: 20px; background: var(--flaeche); border: 1px solid var(--linie);
+  align-self: flex-start; border-bottom-left-radius: 6px; font-size: 15.5px; overflow-wrap: anywhere;
+  -webkit-user-select: text; user-select: text;
+}
+.blase.ich { align-self: flex-end; background: var(--blase-ich); color: #fff; border: 0; border-radius: 20px; border-bottom-right-radius: 6px; }
+.blase.tippt { color: var(--grau); font-style: italic; }
+.blase.fehler { background: var(--marke); color: var(--marke-text); border: 0; }
+.blase p { margin: 0; }
+.blase p + p { margin-top: 2px; }
+.blase .kugeln { margin: 6px 0; }
+.blase .kugel { --d: 28px; }
+.eingabe-bereich {
+  position: fixed; left: 0; right: 0; bottom: calc(var(--unten) + var(--leiste-hoehe)); z-index: 15;
+  background: linear-gradient(to bottom, transparent, var(--hintergrund) 14px); padding: 14px 12px 8px;
+}
+.vorschlaege { max-width: 736px; margin: 0 auto 8px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+.vorschlaege::-webkit-scrollbar { display: none; }
+.vorschlag {
+  flex: none; border: 1px solid var(--linie); background: var(--flaeche); color: var(--text); border-radius: 18px;
+  padding: 7px 13px; font-size: 14.5px; max-width: 78vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.vorschlag:active { background: var(--knopf); }
+.eingabe { max-width: 736px; margin: 0 auto; display: flex; gap: 8px; align-items: center; }
+.eingabe input {
+  flex: 1; min-width: 0; font-size: 16px; padding: 11px 16px; border-radius: 22px; border: 1px solid var(--linie);
+  background: var(--flaeche); color: var(--text); outline: none;
+}
+.eingabe input:focus { border-color: var(--akzent); }
+.eingabe button { width: 44px; height: 44px; flex: none; border-radius: 50%; border: 0; background: var(--primaer); color: #fff; display: grid; place-items: center; }
+.eingabe button:disabled { opacity: 0.45; }
+.eingabe button svg { width: 20px; height: 20px; fill: currentColor; stroke-width: 1.5; }
+
+/* ---------- Leiste unten */
+.leiste {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center;
+  padding-bottom: var(--unten); background: var(--leiste); border-top: 1px solid var(--linie);
+  -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px);
+}
+.reiter {
+  flex: 1; max-width: 200px; height: var(--leiste-hoehe); border: 0; background: transparent; color: var(--grau);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; font-weight: 500;
+}
+.reiter.aktiv { color: var(--akzent); }
+body.tastatur .leiste { display: none; }
+.reiter svg { width: 24px; height: 24px; }
+
+/* ---------- kurzer Hinweis (z. B. neue Version) */
+.hinweis {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--unten) + var(--leiste-hoehe) + 12px); z-index: 30;
+  max-width: min(92vw, 520px); background: var(--kopf); color: #fff; padding: 11px 16px; border-radius: 14px;
+  box-shadow: 0 4px 16px var(--schatten); font-size: 14.5px; display: flex; align-items: center; gap: 12px;
+}
+.hinweis button { border: 0; background: rgba(255, 255, 255, 0.18); color: #fff; border-radius: 10px; padding: 6px 10px; font-weight: 600; flex: none; }

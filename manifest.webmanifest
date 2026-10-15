@@ -1,0 +1,17 @@
+{
+  "name": "Eurojackpot",
+  "short_name": "Eurojackpot",
+  "description": "Alle Eurojackpot-Ziehungen, Statistik, Vorhersage und Assistent",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14213D",
+  "theme_color": "#14213D",
+  "icons": [
+    { "src": "symbol-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "symbol-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "symbol-maskiert-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

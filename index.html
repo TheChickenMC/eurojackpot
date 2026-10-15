@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eurojackpot</title>
+<meta name="description" content="Eurojackpot: alle Ziehungen seit 2012, Statistik, Vorhersage und Assistent – auch fürs iPhone.">
+<meta name="theme-color" content="#14213D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Eurojackpot">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="symbol-192.png">
+<link rel="apple-touch-icon" href="symbol-180.png">
+<link rel="stylesheet" href="app.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="kopf">
+  <div class="kopf-innen">
+    <div class="titel">
+      <h1 id="seitenTitel">Ziehungen</h1>
+      <div class="untertitel" id="stand">Lade Ziehungen …</div>
+    </div>
+    <button class="kopf-knopf" id="neuKnopf" hidden aria-label="Neues Gespräch">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      <span>Neu</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- Ziehungen -->
+  <section class="seite" id="seite-ziehungen">
+    <div class="karte naechste" id="naechste"></div>
+    <div class="suche">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="suchFeld" type="search" inputmode="numeric" placeholder="Zahlen suchen, z. B. 7 12" autocomplete="off" enterkeyhint="search">
+      <button class="such-knopf" id="neuLadenKnopf" type="button" aria-label="Ziehungen aktualisieren" title="Ziehungen aktualisieren">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
+      </button>
+    </div>
+    <div class="liste" id="liste"></div>
+    <button class="mehr" id="mehrKnopf" hidden>Mehr Ziehungen zeigen</button>
+  </section>
+
+  <!-- Assistent -->
+  <section class="seite" id="seite-assistent" hidden>
+    <div class="ki-zeile" id="kiZeile"></div>
+    <div class="verlauf" id="verlauf" aria-live="polite"></div>
+  </section>
+
+  <!-- Einstellungen -->
+  <section class="seite" id="seite-einstellungen" hidden>
+    <h2>Online-KI</h2>
+    <div class="karte">
+      <p class="erklaerung">Ohne KI beantwortet der eingebaute Assistent deine Fragen – er versteht schon sehr viel und rechnet alles
+        exakt aus den Ziehungen. Mit deinem eigenen API-Schlüssel versteht zusätzlich eine Online-KI deine Fragen und plaudert.
+        Die App erkennt den Anbieter am Schlüssel:</p>
+      <ul class="anbieter">
+        <li><b>Claude</b> von Anthropic („sk-ant-…“, aus der Anthropic-Konsole)</li>
+        <li><b>ChatGPT</b> von OpenAI („sk-…“, von der OpenAI-Plattform)</li>
+        <li><b>Gemini</b> von Google („AIza…“, aus Google AI Studio – mit kostenlosem Kontingent)</li>
+      </ul>
+      <p class="klein">Deine Fragen gehen dann verschlüsselt an diesen Anbieter, und er rechnet sie nach seinen Preisen über dein Konto ab
+        (bei kostenlosen Kontingenten darf er sie meist auch zum Trainieren nutzen). Der Schlüssel bleibt nur auf diesem Gerät.
+        Alle Lotto-Zahlen rechnet weiterhin die App exakt aus den Ziehungen.</p>
+      <div class="ki-status" id="kiStatus"></div>
+      <label class="feld">
+        <span>API-Schlüssel</span>
+        <input id="schluesselFeld" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+               placeholder="sk-ant-…, sk-… oder AIza…">
+      </label>
+      <label class="feld">
+        <span>Modell</span>
+        <input id="modellFeld" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="automatisch">
+      </label>
+      <div class="meldung" id="kiMeldung" hidden></div>
+      <div class="knoepfe">
+        <button class="knopf haupt" id="pruefenKnopf">Prüfen und speichern</button>
+        <button class="knopf" id="entfernenKnopf" hidden>Schlüssel entfernen</button>
+      </div>
+      <label class="schalter-zeile" id="kiAnZeile" hidden>
+        <span>Online-KI benutzen</span>
+        <input type="checkbox" id="kiAn" role="switch">
+      </label>
+    </div>
+
+    <h2>Ziehungen</h2>
+    <div class="karte">
+      <p id="datenStand">–</p>
+      <p class="klein">Neue Ziehungen kommen nach jeder Ziehung (dienstags und freitags) von selbst – die Zahlen stammen von lotto.de.</p>
+      <div class="knoepfe"><button class="knopf" id="aktualisierenKnopf">Jetzt aktualisieren</button></div>
+    </div>
+
+    <h2>Aufs iPhone holen</h2>
+    <div class="karte">
+      <p>In Safari unten auf <b>Teilen</b> <span class="teilen-symbol" aria-hidden="true"></span> tippen, dann
+        <b>„Zum Home-Bildschirm“</b>. Danach startet Eurojackpot wie eine App – mit eigenem Symbol, im Vollbild und auch ohne Internet.</p>
+      <p class="klein" id="versionText"></p>
+    </div>
+    <p class="fuss">Lotto ist Zufall – keine App kann Zahlen vorhersagen. Spiel nur mit Geld, das du übrig hast. Teilnahme ab 18.
+      Hilfe bei Glücksspielsucht: check-dein-spiel.de · 0800 1 37 27 00</p>
+  </section>
+</main>
+
+<!-- Eingabe des Assistenten (über der Leiste) -->
+<div class="eingabe-bereich" id="eingabeBereich" hidden>
+  <div class="vorschlaege" id="vorschlaege"></div>
+  <form class="eingabe" id="eingabeForm" autocomplete="off">
+    <input id="frageFeld" type="text" placeholder="Frag mich etwas zum Eurojackpot …" enterkeyhint="send" autocomplete="off">
+    <button type="submit" id="sendenKnopf" aria-label="Senden">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/></svg>
+    </button>
+  </form>
+</div>
+
+<nav class="leiste" aria-label="Bereiche">
+  <button class="reiter aktiv" data-seite="ziehungen">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="8" r="3.2"/><circle cx="17" cy="8" r="3.2"/><circle cx="12" cy="16.5" r="3.2"/></svg>
+    <span>Ziehungen</span>
+  </button>
+  <button class="reiter" data-seite="assistent">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>
+    <span>Assistent</span>
+  </button>
+  <button class="reiter" data-seite="einstellungen">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
+    <span>Einstellungen</span>
+  </button>
+</nav>
+
+<div class="hinweis" id="hinweis" hidden></div>
+</body>
+</html>
