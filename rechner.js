@@ -5,6 +5,8 @@ import * as kern from './rechner-kern.js';
 self.ejMelden = (art, id, json) => self.postMessage({ art, id, wert: JSON.parse(json) });
 
 // ---------- Leitung zur Online-KI (fetch) – Java wartet darauf (FetchLeitung.java)
+// In der iPhone-App schickt die App die Anfrage selbst ab (ios/Quellen/Inhalt.swift, /leitung) – ohne Browser-Sperren.
+const IN_APP = self.location.protocol === 'eurojackpot:';
 const leitungen = new Map();
 let naechsteLeitung = 1;
 
@@ -29,7 +31,7 @@ self.ejLeitung = {
     leitungen.set(id, eintrag);
     zeitAb(eintrag, 15000 + lesezeit);
     try {
-      eintrag.antwort = await fetch(adresse, {
+      eintrag.antwort = await fetch(IN_APP ? '/leitung?ziel=' + encodeURIComponent(adresse) : adresse, {
         method: inhalt == null ? 'GET' : 'POST',
         headers: JSON.parse(kopf),
         body: inhalt == null ? undefined : inhalt,

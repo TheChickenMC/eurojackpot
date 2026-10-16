@@ -1,6 +1,8 @@
-// Eurojackpot im Browser – Oberfläche. Rechnen tut der Rechen-Assistent im Web Worker (rechner.js → rechner-kern.js,
+// Eurojackpot im Browser und in der iPhone-App – Oberfläche. Rechnen tut der Rechen-Assistent im Web Worker (rechner.js → rechner-kern.js,
 // von TeaVM aus demselben Java-Code übersetzt wie am PC und am Handy).
-const VERSION = '2.11';
+const VERSION = '2.12';
+// In der iPhone-App setzt die App das vorher (ios/Quellen/WebAnsicht.swift): {plattform, version, build}
+const APP = window.EJ_APP || null;
 const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 const WOCHENTAGE_LANG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 const SEITEN_TITEL = { ziehungen: 'Ziehungen', assistent: 'Assistent', einstellungen: 'Einstellungen' };
@@ -477,8 +479,32 @@ function zeigeHinweis(text, knopfText, aktion) {
   if (!knopfText) hinweisUhr = setTimeout(() => (h.hidden = true), 3500);
 }
 
+// ---------- iPhone-App: die App selbst aktualisiert SideStore bzw. AltStore – hier nur der Hinweis darauf
+let updateGeprueftUm = 0;
+
+async function appUpdatePruefen() {
+  updateGeprueftUm = Date.now();
+  try {
+    const r = await fetch('apps.json', { cache: 'no-store' });
+    if (!r.ok) return;
+    const quelle = await r.json();
+    const apps = quelle.apps || [];
+    const app = apps.find((a) => a.bundleIdentifier === 'lotto.eurojackpot.tabelle') || apps[0];
+    const neu = app && app.versions && app.versions[0];
+    if (!neu || !(Number(neu.buildVersion) > Number(APP.build))) return;
+    zeigeHinweis('Version ' + neu.version + ' ist da – in SideStore oder AltStore aktualisieren.', 'Öffnen',
+      () => window.webkit.messageHandlers.app.postMessage({ art: 'updaten' }));
+  } catch (e) {
+    // ohne Netz: beim nächsten Mal
+  }
+}
+
 // ---------- Service Worker (offline und Updates)
 function updatesBeachten() {
+  if (APP) {
+    appUpdatePruefen();
+    return;
+  }
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('sw.js').then((reg) => {
     const melden = (w) => {
@@ -502,7 +528,7 @@ function updatesBeachten() {
 
 // ---------- Start
 function start() {
-  $('versionText').textContent = 'Version ' + VERSION + ' · dieselbe Rechnung wie am PC und am Handy';
+  $('versionText').textContent = 'Version ' + VERSION + (APP ? ' · iPhone-App' : '') + ' · dieselbe Rechnung wie am PC und am Handy';
   for (const r of document.querySelectorAll('.reiter')) r.onclick = () => seiteZeigen(r.dataset.seite);
   $('neuKnopf').onclick = neuesGespraech;
   $('eingabeForm').onsubmit = (e) => {
@@ -542,7 +568,9 @@ function start() {
     }
   };
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && Date.now() - geladenUm > 30 * 60 * 1000) ziehungenLaden(true);
+    if (document.visibilityState !== 'visible') return;
+    if (Date.now() - geladenUm > 30 * 60 * 1000) ziehungenLaden(true);
+    if (APP && Date.now() - updateGeprueftUm > 12 * 60 * 60 * 1000) appUpdatePruefen();
   });
   tastaturBeachten();
   rechnerStarten();
