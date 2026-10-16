@@ -1,0 +1,43 @@
+{
+  "name": "Eurojackpot",
+  "identifier": "lotto.eurojackpot.quelle",
+  "sourceURL": "https://thechickenmc.github.io/eurojackpot/apps.json",
+  "subtitle": "Ziehungen, Statistik und Assistent",
+  "description": "Die Eurojackpot-App fürs iPhone und iPad.",
+  "iconURL": "https://thechickenmc.github.io/eurojackpot/symbol-512.png",
+  "website": "https://github.com/TheChickenMC/eurojackpot",
+  "tintColor": "1E9B4F",
+  "news": [],
+  "apps": [
+    {
+      "bundleIdentifier": "lotto.eurojackpot.tabelle",
+      "name": "Eurojackpot",
+      "developerName": "Eurojackpot",
+      "subtitle": "Ziehungen, Statistik und Assistent",
+      "localizedDescription": "Alle Eurojackpot-Ziehungen, Statistik, Vorhersage und ein Assistent, der Fragen zu den Zahlen beantwortet – auf Wunsch mit einer Online-KI über deinen eigenen API-Schlüssel. Dieselbe Rechnung wie am PC und am Handy. Neue Ziehungen kommen von selbst (Zahlen von lotto.de).\n\nLotto ist Zufall – keine App kann Zahlen vorhersagen. Teilnahme ab 18. Hilfe bei Glücksspielsucht: check-dein-spiel.de · 0800 1 37 27 00",
+      "iconURL": "https://thechickenmc.github.io/eurojackpot/symbol-512.png",
+      "tintColor": "1E9B4F",
+      "category": "utilities",
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {}
+      },
+      "versions": [
+        {
+          "version": "2.12",
+          "buildVersion": "33571749",
+          "date": "2026-10-16T09:27:51Z",
+          "localizedDescription": "- Eurojackpot gibt es jetzt als richtige iPhone- und iPad-App (EuroJackpot.ipa) – installieren mit SideStore oder AltStore, Anleitung auf der GitHub-Seite\n- In der iPhone-App: Online-KI mit eigenem API-Schlüssel, Ziehungen auch ohne Internet, Hinweis bei neuen Versionen",
+          "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.12/EuroJackpot.ipa",
+          "size": 650659,
+          "minOSVersion": "15.0"
+        }
+      ],
+      "version": "2.12",
+      "versionDate": "2026-10-16T09:27:51Z",
+      "versionDescription": "- Eurojackpot gibt es jetzt als richtige iPhone- und iPad-App (EuroJackpot.ipa) – installieren mit SideStore oder AltStore, Anleitung auf der GitHub-Seite\n- In der iPhone-App: Online-KI mit eigenem API-Schlüssel, Ziehungen auch ohne Internet, Hinweis bei neuen Versionen",
+      "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.12/EuroJackpot.ipa",
+      "size": 650659
+    }
+  ]
+}
