@@ -1,0 +1,255 @@
+# Baut die Mac-App auf Macs von GitHub - zu Hause gibt es keinen Mac: EuroJackpot-Mac.dmg (Apple-Chip, M1 bis M5) und
+# EuroJackpot-Mac-Intel.dmg (Intel-Macs). veroeffentlichen.bat startet das bei jedem Release (werkzeuge\MacApp.ps1): das
+# fertige EuroJackpot.jar liegt in einem Entwurfs-Release, dazu kommen eine eigene Java-Laufzeit und die KI-Laufzeit
+# (llama.cpp) fuer macOS. Vor dem Hochladen testet sich die App selbst: Bilder aller Seiten (hell und dunkel), echter
+# Start, lokale KI mit dem kleinsten Modell und ein Update auf eine Test-Version mit Austausch und Neustart. Die
+# Ergebnisse liegen danach beim Lauf unter "Artifacts" (mac-test-arm64, mac-test-x64).
+name: Mac-App
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versionsnummer, z. B. 2.13'
+        required: true
+      build:
+        description: 'Build-Nummer, nur Ziffern (dieselbe wie im Jar)'
+        required: true
+      bau:
+        description: 'Entwurfs-Release mit EuroJackpot.jar - dorthin kommen auch die DMGs'
+        required: true
+      ki:
+        description: 'Lokale KI mit dem kleinsten Modell testen (laedt gut 0,5 GB)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mac-app-${{ inputs.bau }}
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+            dmg: EuroJackpot-Mac.dmg
+            llama_sha: 19289548468babcd5131cecccf3a9bc7c67030cc7f0a978dafc0db1ba7891068
+          - runner: macos-15-intel
+            arch: x64
+            dmg: EuroJackpot-Mac-Intel.dmg
+            llama_sha: 853c2c2ed9d796f3f6d0210aac7768a8398997cf2afdc9916a6112003b13760f
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      VERSION: ${{ inputs.version }}
+      BUILD: ${{ inputs.build }}
+      BAU: ${{ inputs.bau }}
+      DMG: ${{ matrix.dmg }}
+      LLAMA: b11565
+      GH_TOKEN: ${{ github.token }}
+      ERG: ${{ github.workspace }}/ergebnis
+      APP: ${{ github.workspace }}/bild/EuroJackpot.app
+    steps:
+      - name: Eingaben pruefen
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "Ungueltige Version: $VERSION"; exit 1; }
+          [[ "$BUILD" =~ ^[0-9]{1,15}$ ]] || { echo "Ungueltige Build-Nummer: $BUILD"; exit 1; }
+          [[ "$BAU" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Ungueltiger Release-Name: $BAU"; exit 1; }
+          mkdir -p "$ERG"
+          { sw_vers; uname -m; sysctl -n machdep.cpu.brand_string; echo "RAM: $(( $(sysctl -n hw.memsize) / 1073741824 )) GB"; } | tee "$ERG/mac.txt"
+
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '26'
+
+      - name: Programm holen
+        run: |
+          mkdir -p eingabe/ki
+          gh release download "$BAU" -R "$GITHUB_REPOSITORY" -p EuroJackpot.jar -D eingabe
+          unzip -p eingabe/EuroJackpot.jar eurojackpot/update.properties > eigen.txt
+          grep -E '^(version|build)=' eigen.txt
+          grep -qx "version=$VERSION" eigen.txt || { echo "Das Jar ist nicht Version $VERSION"; exit 1; }
+          grep -qx "build=$BUILD" eigen.txt || { echo "Das Jar ist nicht Build $BUILD"; exit 1; }
+          java -version
+
+      - name: KI-Laufzeit (llama.cpp) einpacken
+        run: |
+          D=llama-$LLAMA-bin-macos-${{ matrix.arch }}.tar.gz
+          curl -fsSL --retry 3 -o "$D" "https://github.com/ggml-org/llama.cpp/releases/download/$LLAMA/$D"
+          echo "${{ matrix.llama_sha }}  $D" | shasum -a 256 -c -
+          mkdir llama && tar -xzf "$D" -C llama
+          Q=$(dirname "$(find llama -name llama-server -type f | head -1)")
+          Z=eingabe/ki
+          cp -L "$Q/llama-server" "$Z/"
+          # genau die Bibliotheken, die llama-server braucht - unter dem Namen, unter dem sie gesucht werden, ohne Verknuepfungen
+          offen=("$Z/llama-server")
+          while [ ${#offen[@]} -gt 0 ]; do
+            f=${offen[0]}; offen=("${offen[@]:1}")
+            for n in $(otool -L "$f" | awk 'NR>1 {print $1}' | grep '^@rpath/' | sed 's|^@rpath/||'); do
+              if [ ! -e "$Z/$n" ]; then
+                cp -L "$Q/$n" "$Z/$n"
+                offen+=("$Z/$n")
+              fi
+            done
+          done
+          cp "$Q/LICENSE" "$Z/LIZENZ-llama.cpp.txt"
+          chmod 755 "$Z/llama-server"
+          echo "Suchpfade:"; otool -l "$Z/llama-server" | grep -A2 LC_RPATH | grep ' path ' || true
+          otool -l "$Z/llama-server" | grep -A2 LC_RPATH | grep -q '@loader_path' || install_name_tool -add_rpath @loader_path "$Z/llama-server"
+          ls -la "$Z"
+          "$Z/llama-server" --version
+          rm -rf llama "$D"
+
+      - name: Symbol
+        run: |
+          S=.github/mac/symbol-mac-1024.png
+          mkdir EuroJackpot.iconset
+          for g in 16 32 128 256 512; do
+            sips -z $g $g "$S" --out "EuroJackpot.iconset/icon_${g}x${g}.png" >/dev/null
+            sips -z $((g * 2)) $((g * 2)) "$S" --out "EuroJackpot.iconset/icon_${g}x${g}@2x.png" >/dev/null
+          done
+          iconutil -c icns EuroJackpot.iconset -o EuroJackpot.icns
+          ls -la EuroJackpot.icns
+
+      - name: App bauen
+        run: |
+          jpackage --type app-image --name EuroJackpot --input eingabe --main-jar EuroJackpot.jar \
+            --main-class eurojackpot.EuroJackpot --dest bild --icon EuroJackpot.icns --app-version "$VERSION" --vendor Lotto \
+            --description "Eurojackpot - Ziehungen, Diagramme und Vorhersage" \
+            --mac-package-identifier lotto.eurojackpot.tabelle --mac-package-name EuroJackpot \
+            --mac-app-category public.app-category.utilities \
+            --add-modules java.base,java.desktop,java.net.http,jdk.localedata,jdk.management \
+            --jlink-options "--strip-debug --no-man-pages --no-header-files --include-locales=de,en --generate-cds-archive" \
+            --java-options -Xmx256m --java-options --enable-native-access=ALL-UNNAMED
+          chmod 755 "$APP/Contents/app/ki/llama-server"
+          # Version und Build auch fuer den Finder ("Informationen")
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :NSHumanReadableCopyright string Eurojackpot-Tabelle" "$APP/Contents/Info.plist" || true
+          plutil -p "$APP/Contents/Info.plist"
+          cat "$APP/Contents/app/EuroJackpot.cfg"
+
+      - name: Signieren (ad-hoc)
+        run: |
+          # jede Programmdatei einzeln, dann die eingebaute Java-Laufzeit, zuletzt die ganze App
+          find "$APP" -type f -print0 | while IFS= read -r -d '' f; do
+            if file -b "$f" | grep -q 'Mach-O'; then codesign -f -s - --timestamp=none "$f"; fi
+          done
+          codesign -f -s - --timestamp=none "$APP/Contents/runtime"
+          codesign -f -s - --timestamp=none "$APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          codesign -dv "$APP" 2>&1 | grep -E 'Identifier|Format|Signature' || true
+          du -sh "$APP" "$APP/Contents/runtime" "$APP/Contents/app/ki" | tee -a "$ERG/mac.txt"
+
+      - name: DMG bauen
+        run: |
+          mkdir dmg
+          ditto "$APP" dmg/EuroJackpot.app
+          ln -s /Applications dmg/Programme
+          cp .github/mac/Installieren.txt "dmg/So installierst du EuroJackpot.txt"
+          for i in 1 2 3; do
+            hdiutil create -volname EuroJackpot -srcfolder dmg -ov -format ULMO "$DMG" && break
+            echo "hdiutil: neuer Versuch"; sleep 10
+          done
+          hdiutil verify "$DMG"
+          mkdir pruef
+          hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "$PWD/pruef" "$DMG"
+          ls -la pruef
+          codesign --verify --deep --strict pruef/EuroJackpot.app
+          hdiutil detach pruef
+          ls -la "$DMG" | tee -a "$ERG/mac.txt"
+          shasum -a 256 "$DMG" | tee -a "$ERG/mac.txt"
+
+      - name: Selbsttest - Bilder hell und dunkel
+        timeout-minutes: 12
+        run: |
+          J="$APP/Contents/runtime/Contents/Home/bin/java"
+          mkdir probe
+          javac --release 26 -encoding UTF-8 -nowarn -cp "$APP/Contents/app/EuroJackpot.jar" -d probe .github/mac/MacProbe.java
+          for d in hell dunkel; do
+            "$J" -Xmx256m --enable-native-access=ALL-UNNAMED -Djpackage.app-path="$APP/Contents/MacOS/EuroJackpot" \
+              -cp "$APP/Contents/app/EuroJackpot.jar:probe" eurojackpot.MacProbe fotos "$ERG/bilder" "$d"
+            cat "$ERG/bilder/bericht-$d.txt"
+          done
+
+      - name: Selbsttest - echter Start
+        timeout-minutes: 5
+        run: |
+          foto() { screencapture -x "$1" & local p=$!; for i in $(seq 1 20); do kill -0 $p 2>/dev/null || return 0; sleep 1; done; kill $p; echo "screencapture haengt"; }
+          open -n "$APP"
+          for i in $(seq 1 60); do pgrep -x EuroJackpot >/dev/null && break; sleep 1; done
+          sleep 20
+          foto "$ERG/start.png"
+          pgrep -x EuroJackpot || { echo "Die App laeuft nicht"; exit 1; }
+          pkill -x EuroJackpot
+          sleep 3
+          codesign --verify --deep --strict "$APP"
+
+      - name: Selbsttest - lokale KI
+        if: inputs.ki
+        timeout-minutes: 30
+        run: |
+          set +e
+          "$APP/Contents/runtime/Contents/Home/bin/java" -Xmx256m --enable-native-access=ALL-UNNAMED \
+            -Djpackage.app-path="$APP/Contents/MacOS/EuroJackpot" -cp "$APP/Contents/app/EuroJackpot.jar:probe" \
+            eurojackpot.MacProbe ki "$ERG"
+          R=$?
+          cat "$ERG/ki.txt"
+          exit $R
+
+      - name: Selbsttest - Update mit Austausch und Neustart
+        timeout-minutes: 10
+        run: |
+          foto() { screencapture -x "$1" & local p=$!; for i in $(seq 1 20); do kill -0 $p 2>/dev/null || return 0; sleep 1; done; kill $p; echo "screencapture haengt"; }
+          # die "alte" Version liegt in einem eigenen Programme-Ordner, mit Markierung
+          P="$RUNNER_TEMP/Programme"; T="$RUNNER_TEMP/update"
+          mkdir -p "$P" "$T/netz"
+          ditto "$APP" "$P/EuroJackpot.app"
+          echo alt > "$P/EuroJackpot.app/Contents/alt.txt"
+          cp "$DMG" "$T/netz/"
+          J="$P/EuroJackpot.app/Contents/runtime/Contents/Home/bin/java"
+          "$J" -cp "$APP/Contents/app/EuroJackpot.jar:probe" eurojackpot.MacProbe schluessel "$T"
+          python3 -m http.server 8126 --bind 127.0.0.1 --directory "$T/netz" > "$ERG/update-netz.txt" 2>&1 &
+          sleep 2
+          EUROJACKPOT_UPDATE_TEST=http://127.0.0.1:8126/ "$J" -Xmx256m --enable-native-access=ALL-UNNAMED \
+            -Djpackage.app-path="$P/EuroJackpot.app/Contents/MacOS/EuroJackpot" \
+            -cp "$T/klassen:$P/EuroJackpot.app/Contents/app/EuroJackpot.jar:$PWD/probe" \
+            eurojackpot.MacProbe update "$T/netz" "$T/netz/$DMG" "$T" | tee "$ERG/update.txt"
+          # jetzt startet der Helfer die neue Version - die raeumt die alte weg
+          for i in $(seq 1 90); do [ ! -e "$P/EuroJackpot.app.alt" ] && break; sleep 1; done
+          sleep 5
+          foto "$ERG/nach-update.png"
+          ls -la "$P" | tee -a "$ERG/update.txt"
+          [ ! -e "$P/EuroJackpot.app.alt" ] || { echo "Die neue Version hat nicht aufgeraeumt - nicht gestartet?"; exit 1; }
+          [ ! -e "$P/EuroJackpot.app/Contents/alt.txt" ] || { echo "Die alte Version ist noch da"; exit 1; }
+          pgrep -x EuroJackpot || { echo "Die neue Version laeuft nicht"; exit 1; }
+          pkill -x EuroJackpot || true
+          codesign --verify --deep --strict "$P/EuroJackpot.app"
+          echo "Update-Test ok" | tee -a "$ERG/update.txt"
+
+      - name: Absturzberichte einsammeln
+        if: always()
+        run: |
+          mkdir -p "$ERG/abstuerze"
+          find ~/Library/Logs/DiagnosticReports \( -name 'EuroJackpot*' -o -name 'java*' -o -name 'llama*' \) \
+            -exec cp {} "$ERG/abstuerze/" \; 2>/dev/null || true
+          find ~/Library/Application\ Support/EuroJackpot-KI -maxdepth 2 -name '*.log' -exec cp {} "$ERG/abstuerze/" \; 2>/dev/null || true
+      - name: Testergebnisse sichern
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: mac-test-${{ matrix.arch }}
+          path: ergebnis
+          if-no-files-found: ignore
+
+      - name: DMG ans Entwurfs-Release haengen
+        run: gh release upload "$BAU" "$DMG" --clobber -R "$GITHUB_REPOSITORY"

@@ -1,0 +1,24 @@
+EuroJackpot für den Mac
+=======================
+
+1. Ziehe „EuroJackpot“ auf den Ordner „Programme“ (hier im Fenster).
+
+2. Öffne EuroJackpot im Ordner „Programme“ (Doppelklick).
+   Beim ersten Mal meldet macOS, dass es die App nicht prüfen kann – sie kommt
+   nicht aus dem App Store. Klicke auf „Fertig“ und dann:
+
+   Apple-Menü  →  Systemeinstellungen  →  Datenschutz & Sicherheit
+   ganz nach unten scrollen  →  bei „EuroJackpot“ auf „Dennoch öffnen“ klicken
+   →  noch einmal „Dennoch öffnen“ und mit deinem Mac-Passwort bestätigen.
+
+   Das musst du nur einmal machen. Danach startet EuroJackpot ganz normal.
+
+   Für Fortgeschrittene geht es auch im Terminal:
+   xattr -dr com.apple.quarantine /Applications/EuroJackpot.app
+
+3. Updates holt sich EuroJackpot danach selbst – automatisch, oder unten im Fenster
+   auf die Versionsnummer klicken → „Nach Updates suchen“.
+
+Die lokale KI (KI-Assistent → „KI-Modell …“) läuft auf Macs mit Apple-Chip über die
+Grafik (Metal) und ist dort sehr schnell. Unter „Suchen“ findest du weitere Modelle
+von Hugging Face.
