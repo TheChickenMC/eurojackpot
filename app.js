@@ -1,6 +1,6 @@
 // Eurojackpot im Browser und in der iPhone-App – Oberfläche. Rechnen tut der Rechen-Assistent im Web Worker (rechner.js → rechner-kern.js,
 // von TeaVM aus demselben Java-Code übersetzt wie am PC und am Handy).
-const VERSION = '2.12';
+const VERSION = '2.13';
 // In der iPhone-App setzt die App das vorher (ios/Quellen/WebAnsicht.swift): {plattform, version, build}
 const APP = window.EJ_APP || null;
 const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];

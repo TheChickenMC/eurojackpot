@@ -1,6 +1,6 @@
 // Service Worker: hält die App offline bereit. Die Seite selbst kommt aus dem Speicher (schnell, auch ohne Netz) und wird
 // bei jeder neuen Version komplett ersetzt; die Ziehungen holt er zuerst aus dem Netz und nur ohne Netz aus dem Speicher.
-const VERSION = '2.12';
+const VERSION = '2.13';
 const SPEICHER = 'eurojackpot-' + VERSION;
 const DATEIEN = ['./', 'index.html', 'app.css', 'app.js', 'rechner.js', 'rechner-kern.js', 'manifest.webmanifest',
   'symbol-180.png', 'symbol-192.png', 'symbol-512.png', 'symbol-maskiert-512.png', 'ziehungen.csv'];
