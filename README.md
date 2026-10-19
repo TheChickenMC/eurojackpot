@@ -6,9 +6,27 @@ Alle Eurojackpot-Ziehungen, Statistik, Diagramme, Vorhersage und ein Assistent, 
 |---|---|
 | **Windows** | [EuroJackpot.exe](https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot.exe) herunterladen und starten – keine Installation nötig |
 | **Android** | [EuroJackpot.apk](https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot.apk) herunterladen und installieren |
+| **Mac mit Apple-Chip** (M1 bis M5) | [EuroJackpot-Mac.dmg](https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot-Mac.dmg) öffnen und EuroJackpot auf „Programme“ ziehen – Anleitung unten |
+| **Mac mit Intel** | [EuroJackpot-Mac-Intel.dmg](https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot-Mac-Intel.dmg) – sonst genauso |
 | **iPhone / iPad** | [EuroJackpot.ipa](https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot.ipa) mit SideStore oder AltStore installieren – Anleitung unten |
 
 Updates kommen von selbst. Die Ziehungen stammen von lotto.de.
+
+## Mac
+
+Läuft ab macOS 13.3 Ventura, auch auf macOS 15 Sequoia und macOS 26. Welcher Chip? Apple-Menü → **Über diesen Mac** → „Chip: Apple M…“
+oder „Prozessor: … Intel …“.
+
+1. Das passende DMG herunterladen und öffnen, **EuroJackpot** auf den Ordner **Programme** ziehen.
+2. EuroJackpot in **Programme** öffnen. Beim ersten Mal meldet macOS, dass es die App nicht prüfen kann (sie kommt nicht
+   aus dem App Store) – auf **Fertig** klicken.
+3. Apple-Menü → **Systemeinstellungen** → **Datenschutz & Sicherheit** → ganz unten bei „EuroJackpot“ auf **Dennoch öffnen**
+   klicken und mit dem Mac-Passwort bestätigen. Das ist nur einmal nötig.
+
+   Oder im Terminal: `xattr -dr com.apple.quarantine /Applications/EuroJackpot.app`
+
+Updates installiert die App danach selbst. Die lokale KI rechnet auf Macs mit Apple-Chip über die Grafik und ist dort
+sehr schnell; unter **KI-Modell → Suchen** gibt es weitere Modelle von Hugging Face.
 
 ## iPhone und iPad
 
