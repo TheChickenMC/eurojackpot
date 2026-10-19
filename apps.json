@@ -24,6 +24,15 @@
       },
       "versions": [
         {
+          "version": "2.13",
+          "buildVersion": "33576237",
+          "date": "2026-10-19T12:22:48Z",
+          "localizedDescription": "- Neu: Eurojackpot für den Mac – EuroJackpot-Mac.dmg für Macs mit Apple-Chip, EuroJackpot-Mac-Intel.dmg für Intel-Macs, mit lokaler KI und automatischen Updates\n- Viel schlauere KI: unter „KI-Modell“ gibt es jetzt größere Modelle (Gemma 4 und Qwen3.5 von 4B bis 35B) – die App empfiehlt das passende für deinen Arbeitsspeicher\n- KI-Modelle suchen: passende Modelle von Hugging Face finden und mit einem Klick installieren – geladene Modelle jederzeit wechseln oder löschen\n- KI-Assistent zuverlässiger: Wiederholt sich ein Modell, wird abgebrochen, und erfundene Lotto-Aussagen kleiner Modelle ersetzt die App durch echte Zahlen",
+          "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.13/EuroJackpot.ipa",
+          "size": 650860,
+          "minOSVersion": "15.0"
+        },
+        {
           "version": "2.12",
           "buildVersion": "33571749",
           "date": "2026-10-16T09:27:51Z",
@@ -33,11 +42,11 @@
           "minOSVersion": "15.0"
         }
       ],
-      "version": "2.12",
-      "versionDate": "2026-10-16T09:27:51Z",
-      "versionDescription": "- Eurojackpot gibt es jetzt als richtige iPhone- und iPad-App (EuroJackpot.ipa) – installieren mit SideStore oder AltStore, Anleitung auf der GitHub-Seite\n- In der iPhone-App: Online-KI mit eigenem API-Schlüssel, Ziehungen auch ohne Internet, Hinweis bei neuen Versionen",
-      "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.12/EuroJackpot.ipa",
-      "size": 650659
+      "version": "2.13",
+      "versionDate": "2026-10-19T12:22:48Z",
+      "versionDescription": "- Neu: Eurojackpot für den Mac – EuroJackpot-Mac.dmg für Macs mit Apple-Chip, EuroJackpot-Mac-Intel.dmg für Intel-Macs, mit lokaler KI und automatischen Updates\n- Viel schlauere KI: unter „KI-Modell“ gibt es jetzt größere Modelle (Gemma 4 und Qwen3.5 von 4B bis 35B) – die App empfiehlt das passende für deinen Arbeitsspeicher\n- KI-Modelle suchen: passende Modelle von Hugging Face finden und mit einem Klick installieren – geladene Modelle jederzeit wechseln oder löschen\n- KI-Assistent zuverlässiger: Wiederholt sich ein Modell, wird abgebrochen, und erfundene Lotto-Aussagen kleiner Modelle ersetzt die App durch echte Zahlen",
+      "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.13/EuroJackpot.ipa",
+      "size": 650860
     }
   ]
 }
