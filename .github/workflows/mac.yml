@@ -136,6 +136,14 @@ jobs:
           rm -f "$APP/Contents/runtime/Contents/Home/lib/server/classes_nocoops.jsa" "$APP/Contents/runtime/Contents/Home/bin/keytool"
           # Version und Build auch fuer den Finder ("Informationen")
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" "$APP/Contents/Info.plist"
+          # aelteste macOS-Version, auf der alles laeuft (Java und KI-Laufzeit) - zu alte Macs bekommen dann eine klare Meldung
+          MIN=$(find "$APP" -type f -print0 | while IFS= read -r -d '' f; do
+            if file -b "$f" | grep -q 'Mach-O'; then
+              otool -l "$f" | awk '/LC_BUILD_VERSION|LC_VERSION_MIN_MACOSX/ {b = 1} b && /^ *(minos|version) / {print $2; b = 0}'
+            fi
+          done | sort -V | tail -1)
+          echo "macOS ab $MIN" | tee -a "$ERG/mac.txt"
+          if [[ "$MIN" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then /usr/libexec/PlistBuddy -c "Set :LSMinimumSystemVersion $MIN" "$APP/Contents/Info.plist"; fi
           plutil -p "$APP/Contents/Info.plist"
           cat "$APP/Contents/app/EuroJackpot.cfg"
 

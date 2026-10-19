@@ -54,17 +54,49 @@ import javax.swing.UIManager;
 public final class MacProbe {
     private static final LocalDate HEUTE = LocalDate.now();
 
-    public static void main(String[] a) throws Exception {
-        Path aus = Path.of(a[1]);
-        Files.createDirectories(aus);
-        switch (a[0]) {
-            case "fotos" -> fotos(aus, a[2]);
-            case "ki" -> ki(aus);
-            case "modell" -> modell(aus, Integer.parseInt(a[2]), new File(a[3]), new File(a[4]), a.length > 5 && a[5].equals("kurz"));
-            case "schluessel" -> schluessel(aus);
-            case "update" -> update(aus, Path.of(a[2]), Path.of(a[3]));
-            default -> throw new IllegalArgumentException("Unbekannt: " + a[0]);
+    public static void main(String[] a) {
+        try {
+            Path aus = Path.of(a[1]);
+            Files.createDirectories(aus);
+            wachhund(switch (a[0]) {
+                case "fotos" -> 300;
+                case "update" -> 480;
+                case "modell" -> 10000; // große Modelle auf kleinen Testrechnern
+                default -> 3000;
+            });
+            switch (a[0]) {
+                case "fotos" -> fotos(aus, a[2]);
+                case "ki" -> ki(aus);
+                case "modell" -> modell(aus, Integer.parseInt(a[2]), new File(a[3]), new File(a[4]), a.length > 5 && a[5].equals("kurz"));
+                case "schluessel" -> schluessel(aus);
+                case "update" -> update(aus, Path.of(a[2]), Path.of(a[3]));
+                default -> throw new IllegalArgumentException("Unbekannt: " + a[0]);
+            }
+        } catch (Throwable t) {
+            // sofort beenden – sonst hält der Swing-Thread das Programm bis zum Zeitlimit am Leben
+            t.printStackTrace();
+            Runtime.getRuntime().halt(1);
         }
+    }
+
+    /** Hängt etwas zu lange: alle Threads mit Stapel ausgeben (zeigt, wo es hängt) und beenden. */
+    private static void wachhund(int sekunden) {
+        Thread t = new Thread(() -> {
+            try {
+                Thread.sleep(sekunden * 1000L);
+            } catch (InterruptedException e) {
+                return;
+            }
+            System.err.println("ZEITLIMIT nach " + sekunden + " s – Threads:");
+            for (var e : Thread.getAllStackTraces().entrySet()) {
+                System.err.println("\n" + e.getKey());
+                for (StackTraceElement s : e.getValue()) System.err.println("    at " + s);
+            }
+            for (Window w : Window.getWindows()) System.err.println("Fenster: " + w.getClass().getName() + " sichtbar=" + w.isShowing());
+            Runtime.getRuntime().halt(2);
+        }, "Wachhund");
+        t.setDaemon(true);
+        t.start();
     }
 
     /* ---------- Bilder */
