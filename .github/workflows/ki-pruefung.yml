@@ -22,6 +22,7 @@ jobs:
           - nr: 0
           - nr: 1
           - nr: 2
+          - nr: 3
     runs-on: ubuntu-latest
     timeout-minutes: 180
     env:
