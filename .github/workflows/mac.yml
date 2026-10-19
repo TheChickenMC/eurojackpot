@@ -160,6 +160,7 @@ jobs:
           du -sh "$APP" "$APP/Contents/runtime" "$APP/Contents/app/ki" | tee -a "$ERG/mac.txt"
 
       - name: DMG bauen
+        id: dmg
         run: |
           mkdir dmg
           ditto "$APP" dmg/EuroJackpot.app
@@ -178,12 +179,16 @@ jobs:
           ls -la "$DMG" | tee -a "$ERG/mac.txt"
           shasum -a 256 "$DMG" | tee -a "$ERG/mac.txt"
 
+      - name: Testprogramm uebersetzen
+        run: |
+          mkdir probe
+          javac --release 26 -encoding UTF-8 -nowarn -cp "$APP/Contents/app/EuroJackpot.jar" -d probe .github/mac/MacProbe.java
+
       - name: Selbsttest - Bilder hell und dunkel
+        if: ${{ !cancelled() && steps.dmg.outcome == 'success' }}
         timeout-minutes: 12
         run: |
           J="$APP/Contents/runtime/Contents/Home/bin/java"
-          mkdir probe
-          javac --release 26 -encoding UTF-8 -nowarn -cp "$APP/Contents/app/EuroJackpot.jar" -d probe .github/mac/MacProbe.java
           for d in hell dunkel; do
             "$J" -Xmx256m --enable-native-access=ALL-UNNAMED -Djpackage.app-path="$APP/Contents/MacOS/EuroJackpot" \
               -cp "$APP/Contents/app/EuroJackpot.jar:probe" eurojackpot.MacProbe fotos "$ERG/bilder" "$d"
@@ -191,6 +196,7 @@ jobs:
           done
 
       - name: Selbsttest - echter Start
+        if: ${{ !cancelled() && steps.dmg.outcome == 'success' }}
         timeout-minutes: 5
         run: |
           foto() { screencapture -x "$1" & local p=$!; for i in $(seq 1 20); do kill -0 $p 2>/dev/null || return 0; sleep 1; done; kill $p; echo "screencapture haengt"; }
@@ -204,7 +210,7 @@ jobs:
           codesign --verify --deep --strict "$APP"
 
       - name: Selbsttest - lokale KI
-        if: inputs.ki
+        if: ${{ !cancelled() && steps.dmg.outcome == 'success' && inputs.ki }}
         timeout-minutes: 30
         run: |
           set +e
@@ -216,6 +222,7 @@ jobs:
           exit $R
 
       - name: Selbsttest - Update mit Austausch und Neustart
+        if: ${{ !cancelled() && steps.dmg.outcome == 'success' }}
         timeout-minutes: 10
         run: |
           foto() { screencapture -x "$1" & local p=$!; for i in $(seq 1 20); do kill -0 $p 2>/dev/null || return 0; sleep 1; done; kill $p; echo "screencapture haengt"; }
