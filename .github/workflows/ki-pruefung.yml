@@ -19,14 +19,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - nr: 0
+          - nr: 1
           - nr: 2
-          - nr: 3
-          - nr: 4
-          - nr: 5
-          - nr: 6
-            kurz: kurz
-          - nr: 7
-            kurz: kurz
     runs-on: ubuntu-latest
     timeout-minutes: 180
     env:
