@@ -203,8 +203,10 @@ public final class MacProbe {
     /** Beschriftung eines Knopfs oder Menüpunkts (der hat sie als Namen für Bildschirmleser). */
     private static String text(Component c) {
         if (c instanceof AbstractButton b) return b.getText() != null ? b.getText().trim() : null;
-        if (c instanceof JComponent j && !(c instanceof JPopupMenu) && j.getAccessibleContext().getAccessibleName() != null) {
-            return j.getAccessibleContext().getAccessibleName().trim();
+        if (c instanceof JComponent j && !(c instanceof JPopupMenu)) {
+            // eigene Bausteine haben oft gar keinen AccessibleContext
+            javax.accessibility.AccessibleContext a = j.getAccessibleContext();
+            if (a != null && a.getAccessibleName() != null) return a.getAccessibleName().trim();
         }
         return null;
     }
@@ -372,7 +374,20 @@ public final class MacProbe {
         UpdateDienst dienst = new UpdateDienst();
         UpdateDienst.Pruefung p = dienst.pruefen();
         System.out.println("Prüfung: " + p.meldung());
-        if (p.neu() == null) throw new IllegalStateException("kein Update gefunden");
+        if (p.neu() == null) {
+            // genauer nachsehen, woran es liegt
+            String basis = System.getenv("EUROJACKPOT_UPDATE_TEST");
+            System.out.println("Testserver: " + basis);
+            try {
+                java.net.http.HttpResponse<String> r = java.net.http.HttpClient.newHttpClient().send(
+                        java.net.http.HttpRequest.newBuilder(java.net.URI.create(basis + UpdateInfo.MANIFEST)).build(),
+                        java.net.http.HttpResponse.BodyHandlers.ofString());
+                System.out.println("direkt: HTTP " + r.statusCode() + " " + r.version() + " · " + r.body().length() + " Zeichen");
+            } catch (Exception e) {
+                e.printStackTrace(System.out);
+            }
+            throw new IllegalStateException("kein Update gefunden");
+        }
         Path app = MacUpdate.austauschbar();
         System.out.println("App: " + app);
         if (app == null) throw new IllegalStateException("App nicht austauschbar");
