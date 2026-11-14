@@ -3,155 +3,245 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Eurojackpot</title>
-<meta name="description" content="Eurojackpot: alle Ziehungen seit 2012, Statistik, Vorhersage und Assistent.">
+<title>Eurojackpot – App herunterladen</title>
+<meta name="description" content="Eurojackpot für Windows, Mac, Android und iPhone: alle Ziehungen seit 2012, Statistik, Diagramme und ein Assistent.">
 <meta name="theme-color" content="#14213D">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Eurojackpot">
-<meta name="format-detection" content="telephone=no">
-<link rel="manifest" href="manifest.webmanifest">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
 <link rel="icon" type="image/png" sizes="192x192" href="symbol-192.png">
 <link rel="apple-touch-icon" href="symbol-180.png">
-<link rel="stylesheet" href="app.css">
-<script type="module" src="app.js"></script>
+<style>
+:root {
+  --blau: #14213D; --blau2: #1F3A68; --gold: #F5B700; --gold2: #FFD24D;
+  --bg: #F4F6FA; --karte: #FFFFFF; --text: #14213D; --grau: #5B6475; --linie: #E2E6EE;
+  --schatten: 0 1px 2px rgba(20,33,61,.06), 0 8px 24px rgba(20,33,61,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0D1426; --karte: #16203A; --text: #EEF2F8; --grau: #A3ADC2; --linie: #26324F;
+          --schatten: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35); }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+a { color: inherit; }
+.innen { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+/* Kopf */
+.kopf { background: radial-gradient(1200px 500px at 85% -10%, #2C4F8C 0%, transparent 60%),
+  linear-gradient(160deg, var(--blau) 0%, var(--blau2) 100%); color: #fff; padding: 28px 0 88px; overflow: hidden; }
+.marke { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 18px; letter-spacing: .2px; }
+.marke img { width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.held { display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px; align-items: center; margin-top: 56px; }
+.held h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.08; margin: 0 0 16px; letter-spacing: -.5px; }
+.held h1 span { color: var(--gold); }
+.held p { font-size: 18px; color: #C9D3E6; margin: 0 0 28px; max-width: 34em; }
+.knopf { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 12px; font-weight: 650;
+  text-decoration: none; border: 0; cursor: pointer; font-size: 16px; transition: transform .12s ease, box-shadow .12s ease, background .12s; }
+.knopf:hover { transform: translateY(-1px); }
+.knopf:focus-visible { outline: 3px solid var(--gold2); outline-offset: 3px; }
+.knopf.gold { background: var(--gold); color: #14213D; box-shadow: 0 6px 18px rgba(245,183,0,.35); }
+.knopf.gold:hover { background: var(--gold2); }
+.knopf svg { width: 20px; height: 20px; flex: none; }
+.neben { display: block; margin-top: 12px; font-size: 14px; color: #A9B6CF; }
+.neben a { color: #fff; }
+.kugeln { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.kugel { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 22px;
+  background: radial-gradient(circle at 32% 28%, #fff 0%, #E9EDF5 45%, #C7CFDD 100%); color: #14213D;
+  box-shadow: inset 0 -4px 8px rgba(0,0,0,.12), 0 8px 20px rgba(0,0,0,.25); }
+.kugel.euro { background: radial-gradient(circle at 32% 28%, #FFF3C4 0%, #FFD24D 45%, #E0A100 100%); }
+.kugel-reihe { display: flex; gap: 12px; justify-content: center; }
+
+/* Geräte */
+main { margin-top: -56px; }
+.raster { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.geraet { background: var(--karte); border: 1px solid var(--linie); border-radius: 16px; padding: 22px; box-shadow: var(--schatten);
+  display: flex; flex-direction: column; gap: 10px; position: relative; }
+.geraet.passt { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold), var(--schatten); }
+.geraet .marker { position: absolute; top: -11px; right: 16px; background: var(--gold); color: #14213D; font-size: 12px; font-weight: 700;
+  padding: 3px 10px; border-radius: 999px; display: none; }
+.geraet.passt .marker { display: block; }
+.geraet .symbol { width: 44px; height: 44px; border-radius: 12px; background: rgba(31,58,104,.1); display: grid; place-items: center; }
+@media (prefers-color-scheme: dark) { .geraet .symbol { background: rgba(255,255,255,.08); } }
+.geraet .symbol svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.geraet h3 { margin: 4px 0 0; font-size: 19px; }
+.geraet p { margin: 0; color: var(--grau); font-size: 14.5px; flex: 1; }
+.geraet .knopf { justify-content: center; background: var(--blau); color: #fff; padding: 12px 16px; font-size: 15px; }
+.geraet .knopf:hover { background: var(--blau2); }
+@media (prefers-color-scheme: dark) { .geraet .knopf { background: #2C4F8C; } .geraet .knopf:hover { background: #3A62A8; } }
+.geraet .klein { font-size: 13px; color: var(--grau); }
+.geraet .klein a { color: var(--text); }
+
+/* Abschnitte */
+section { margin: 64px 0; }
+h2 { font-size: 28px; margin: 0 0 8px; letter-spacing: -.3px; }
+.unter { color: var(--grau); margin: 0 0 24px; }
+.merkmale { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.merkmal { background: var(--karte); border: 1px solid var(--linie); border-radius: 16px; padding: 20px; }
+.merkmal b { display: block; margin-bottom: 4px; font-size: 16.5px; }
+.merkmal span { color: var(--grau); font-size: 14.5px; }
+details { background: var(--karte); border: 1px solid var(--linie); border-radius: 14px; padding: 0 20px; margin-bottom: 10px; }
+summary { cursor: pointer; padding: 16px 0; font-weight: 650; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--grau); }
+details[open] summary::after { content: "–"; }
+details > div { padding: 0 0 18px; color: var(--grau); font-size: 15px; }
+details ol { margin: 0; padding-left: 20px; }
+details li { margin: 6px 0; }
+code { background: rgba(127,140,170,.15); padding: 2px 6px; border-radius: 6px; font-size: 13.5px; word-break: break-all; }
+.quelle { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.quelle button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--linie); background: var(--bg);
+  color: var(--text); cursor: pointer; }
+
+footer { border-top: 1px solid var(--linie); padding: 28px 0 40px; color: var(--grau); font-size: 13.5px; }
+footer .zeile { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+.hinweis18 { display: inline-flex; align-items: center; gap: 8px; }
+.hinweis18 b { border: 2px solid currentColor; border-radius: 50%; width: 30px; height: 30px; display: inline-grid; place-items: center; font-size: 12px; }
+
+@media (max-width: 820px) {
+  .held { grid-template-columns: 1fr; margin-top: 36px; gap: 28px; }
+  .kugeln-bereich { order: -1; }
+  .kugel { width: 48px; height: 48px; font-size: 17px; }
+  .kopf { padding-bottom: 76px; }
+}
+@media (prefers-reduced-motion: reduce) { .knopf { transition: none; } .knopf:hover { transform: none; } }
+</style>
 </head>
 <body>
 <header class="kopf">
-  <div class="kopf-innen">
-    <div class="titel">
-      <h1 id="seitenTitel">Ziehungen</h1>
-      <div class="untertitel" id="stand">Lade Ziehungen …</div>
+  <div class="innen">
+    <div class="marke"><img src="symbol-192.png" alt="" width="40" height="40">Eurojackpot</div>
+    <div class="held">
+      <div>
+        <h1>Alle Ziehungen.<br><span>Alle Zahlen.</span> Eine App.</h1>
+        <p>Jede Eurojackpot-Ziehung seit 2012, übersichtliche Statistik, Diagramme und ein Assistent, der deine Fragen zu den Zahlen beantwortet – für Windows, Mac, Android und iPhone.</p>
+        <a class="knopf gold" id="hauptKnopf" href="#geraete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+          <span id="hauptText">Kostenlos herunterladen</span>
+        </a>
+        <span class="neben" id="hauptNeben">Für alle Geräte – Updates kommen von selbst.</span>
+      </div>
+      <div class="kugeln-bereich" aria-hidden="true">
+        <div class="kugeln">
+          <div class="kugel">7</div><div class="kugel">12</div><div class="kugel">23</div><div class="kugel">34</div><div class="kugel">45</div>
+        </div>
+        <div class="kugel-reihe" style="margin-top:12px"><div class="kugel euro">3</div><div class="kugel euro">9</div></div>
+      </div>
     </div>
-    <button class="kopf-knopf" id="neuKnopf" hidden aria-label="Neues Gespräch">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      <span>Neu</span>
-    </button>
   </div>
 </header>
 
-<main>
-  <!-- Ziehungen -->
-  <section class="seite" id="seite-ziehungen">
-    <div class="karte naechste" id="naechste"></div>
-    <div class="suche">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-      <input id="suchFeld" type="search" inputmode="numeric" placeholder="Zahlen suchen, z. B. 7 12" autocomplete="off" enterkeyhint="search">
-      <button class="such-knopf" id="neuLadenKnopf" type="button" aria-label="Ziehungen aktualisieren" title="Ziehungen aktualisieren">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.3 6.7A7.5 7.5 0 1 0 19.24 13.94"/><path d="M17.3 2.2v4.5h-4.5"/></svg>
-      </button>
+<main class="innen">
+  <div class="raster" id="geraete">
+    <div class="geraet" data-geraet="windows">
+      <span class="marker">Dein Gerät</span>
+      <div class="symbol"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+      <h3>Windows</h3>
+      <p>Herunterladen und starten – keine Installation nötig. Windows 10 und 11.</p>
+      <a class="knopf" href="https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot.exe" rel="noopener">EuroJackpot.exe laden</a>
     </div>
-    <div class="liste" id="liste"></div>
-    <button class="mehr" id="mehrKnopf" hidden>Mehr Ziehungen zeigen</button>
+    <div class="geraet" data-geraet="android">
+      <span class="marker">Dein Gerät</span>
+      <div class="symbol"><svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></div>
+      <h3>Android</h3>
+      <p>Herunterladen, öffnen und installieren. Ab Android 8.</p>
+      <a class="knopf" href="https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot.apk" rel="noopener">EuroJackpot.apk laden</a>
+    </div>
+    <div class="geraet" data-geraet="mac">
+      <span class="marker">Dein Gerät</span>
+      <div class="symbol"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="11" rx="1.5"/><path d="M2 19h20l-2-4H4z"/></svg></div>
+      <h3>Mac</h3>
+      <p>DMG öffnen und EuroJackpot auf „Programme“ ziehen. Ab macOS 13.3.</p>
+      <a class="knopf" href="https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot-Mac.dmg" rel="noopener">Mac mit Apple-Chip</a>
+      <span class="klein">Älterer Mac? <a href="https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot-Mac-Intel.dmg" rel="noopener">Version für Intel</a></span>
+    </div>
+    <div class="geraet" data-geraet="iphone">
+      <span class="marker">Dein Gerät</span>
+      <div class="symbol"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="3"/><path d="M10.5 5h3"/></svg></div>
+      <h3>iPhone &amp; iPad</h3>
+      <p>Über SideStore oder AltStore (kostenlos) – die Anleitung steht unten.</p>
+      <a class="knopf" href="#iphone">So geht’s</a>
+    </div>
+  </div>
+
+  <section>
+    <h2>Was die App kann</h2>
+    <p class="unter">Alles rechnet die App selbst aus den echten Ziehungen – ohne Konto, ohne Werbung.</p>
+    <div class="merkmale">
+      <div class="merkmal"><b>Alle Ziehungen</b><span>Jede Ziehung seit dem Start 2012, durchsuchbar nach Zahlen. Neue Ziehungen kommen dienstags und freitags von selbst.</span></div>
+      <div class="merkmal"><b>Statistik &amp; Diagramme</b><span>Wie oft kam welche Zahl, wann zuletzt, welche Paare und Muster – übersichtlich dargestellt.</span></div>
+      <div class="merkmal"><b>Assistent</b><span>Frag einfach: „Wann kam die 7 zuletzt?“ – der Assistent rechnet die Antwort exakt aus den Ziehungen.</span></div>
+      <div class="merkmal"><b>Läuft überall</b><span>Windows, Mac, Android und iPhone. Updates installieren sich von selbst und sind digital signiert.</span></div>
+    </div>
   </section>
 
-  <!-- Assistent -->
-  <section class="seite" id="seite-assistent" hidden>
-    <div class="karte pro-sperre" id="aboSperre" hidden></div>
-    <div class="ki-zeile" id="kiZeile"></div>
-    <div class="verlauf" id="verlauf" aria-live="polite"></div>
-  </section>
-
-  <!-- Einstellungen -->
-  <section class="seite" id="seite-einstellungen" hidden>
-    <h2 id="proTitel" hidden>PRO</h2>
-    <div class="karte" id="proKarte" hidden>
-      <div class="ki-status" id="proStatus"></div>
-      <p><b id="proPreis"></b></p>
-      <ul class="anbieter" id="proVorteile"></ul>
-      <p class="klein">PRO gilt mit demselben Schlüssel auf PC, Mac, Android und iPhone. Hier schaltet es den Assistenten frei.</p>
-      <p class="klein" id="proSchluessel" hidden></p>
-      <label class="feld" id="proFeldZeile">
-        <span>Lizenzschlüssel aus der Kauf-E-Mail</span>
-        <input id="proFeld" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false"
-               placeholder="Lizenzschlüssel einfügen">
-      </label>
-      <div class="meldung" id="proMeldung" hidden></div>
-      <div class="knoepfe">
-        <button class="knopf haupt" id="proFreiKnopf">Freischalten</button>
-        <a class="knopf gold" id="proKaufenKnopf" target="_blank" rel="noopener">PRO holen</a>
-        <a class="knopf" id="proVerwaltenKnopf" target="_blank" rel="noopener" hidden>Abo verwalten / kündigen</a>
-        <button class="knopf" id="proPruefenKnopf" hidden>Jetzt prüfen</button>
-        <button class="knopf" id="proAbmeldenKnopf" hidden>Von diesem Gerät abmelden</button>
-      </div>
-      <p class="klein" id="proBedingungen"></p>
-      <p class="klein" id="proEhrlich"></p>
-      <p class="klein pro-links" id="proLinks"></p>
-    </div>
-
-    <h2>Online-KI</h2>
-    <div class="karte">
-      <p class="erklaerung">Ohne KI beantwortet der eingebaute Assistent deine Fragen – er versteht schon sehr viel und rechnet alles
-        exakt aus den Ziehungen. Mit deinem eigenen API-Schlüssel versteht zusätzlich eine Online-KI deine Fragen und plaudert.
-        Die App erkennt den Anbieter am Schlüssel:</p>
-      <ul class="anbieter">
-        <li><b>Claude</b> von Anthropic („sk-ant-…“, aus der Anthropic-Konsole)</li>
-        <li><b>ChatGPT</b> von OpenAI („sk-…“, von der OpenAI-Plattform)</li>
-        <li><b>Gemini</b> von Google („AIza…“, aus Google AI Studio – mit kostenlosem Kontingent)</li>
-      </ul>
-      <p class="klein">Deine Fragen gehen dann verschlüsselt an diesen Anbieter, und er rechnet sie nach seinen Preisen über dein Konto ab
-        (bei kostenlosen Kontingenten darf er sie meist auch zum Trainieren nutzen). Der Schlüssel bleibt nur auf diesem Gerät.
-        Alle Lotto-Zahlen rechnet weiterhin die App exakt aus den Ziehungen.</p>
-      <div class="ki-status" id="kiStatus"></div>
-      <label class="feld">
-        <span>API-Schlüssel</span>
-        <input id="schluesselFeld" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
-               placeholder="sk-ant-…, sk-… oder AIza…">
-      </label>
-      <label class="feld">
-        <span>Modell</span>
-        <input id="modellFeld" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="automatisch">
-      </label>
-      <div class="meldung" id="kiMeldung" hidden></div>
-      <div class="knoepfe">
-        <button class="knopf haupt" id="pruefenKnopf">Prüfen und speichern</button>
-        <button class="knopf" id="entfernenKnopf" hidden>Schlüssel entfernen</button>
-      </div>
-      <label class="schalter-zeile" id="kiAnZeile" hidden>
-        <span>Online-KI benutzen</span>
-        <input type="checkbox" id="kiAn" role="switch">
-      </label>
-    </div>
-
-    <h2>Ziehungen</h2>
-    <div class="karte">
-      <p id="datenStand">–</p>
-      <p class="klein">Neue Ziehungen kommen nach jeder Ziehung (dienstags und freitags) von selbst – die Zahlen stammen von lotto.de.</p>
-      <div class="knoepfe"><button class="knopf" id="aktualisierenKnopf">Jetzt aktualisieren</button></div>
-      <p class="klein" id="versionText"></p>
-    </div>
-    <p class="fuss">Lotto ist Zufall – keine App kann Zahlen vorhersagen. Spiel nur mit Geld, das du übrig hast. Teilnahme ab 18.
-      Hilfe bei Glücksspielsucht: check-dein-spiel.de · 0800 1 37 27 00</p>
+  <section>
+    <h2>Installation</h2>
+    <p class="unter">Die App kommt nicht aus einem App Store – deshalb fragt dein Gerät beim ersten Mal nach.</p>
+    <details>
+      <summary>Windows: „Der Computer wurde durch Windows geschützt“</summary>
+      <div>Klicke auf <b>Weitere Informationen</b> und dann auf <b>Trotzdem ausführen</b>. Das ist nur beim ersten Start nötig.</div>
+    </details>
+    <details>
+      <summary>Android: Installation aus unbekannten Quellen</summary>
+      <div><ol>
+        <li>EuroJackpot.apk herunterladen und in den Downloads antippen.</li>
+        <li>Fragt Android nach, für den Browser <b>Installieren unbekannter Apps</b> erlauben.</li>
+        <li><b>Installieren</b> antippen. Updates meldet die App danach selbst.</li>
+      </ol></div>
+    </details>
+    <details>
+      <summary>Mac: „EuroJackpot kann nicht geprüft werden“</summary>
+      <div><ol>
+        <li>Welcher Chip? Apple-Menü → <b>Über diesen Mac</b>: „Apple M…“ = Apple-Chip, „Intel“ = Intel-Version.</li>
+        <li>DMG öffnen und <b>EuroJackpot</b> auf <b>Programme</b> ziehen, dann öffnen und die Meldung mit <b>Fertig</b> schließen.</li>
+        <li>Apple-Menü → <b>Systemeinstellungen</b> → <b>Datenschutz &amp; Sicherheit</b> → ganz unten bei EuroJackpot <b>Dennoch öffnen</b>.</li>
+      </ol></div>
+    </details>
+    <details id="iphone">
+      <summary>iPhone &amp; iPad mit SideStore oder AltStore</summary>
+      <div><ol>
+        <li>SideStore einmal einrichten (dafür braucht man einmal einen PC oder Mac): <a href="https://docs.sidestore.io" rel="noopener">docs.sidestore.io</a> – oder AltStore: <a href="https://altstore.io" rel="noopener">altstore.io</a>.</li>
+        <li>In SideStore unter <b>Quellen</b> diese Quelle hinzufügen und dort <b>Eurojackpot</b> installieren:
+          <div class="quelle"><code id="quelleText">https://thechickenmc.github.io/eurojackpot/apps.json</code><button type="button" id="kopieren">Kopieren</button></div></li>
+        <li>Ab iOS 16 einmal den <b>Entwicklermodus</b> einschalten: Einstellungen → Datenschutz &amp; Sicherheit → Entwicklermodus.</li>
+        <li>Mit einer kostenlosen Apple-ID hält die Signatur 7 Tage – SideStore erneuert sie, wenn du es ab und zu öffnest.</li>
+      </ol></div>
+    </details>
   </section>
 </main>
 
-<!-- Eingabe des Assistenten (über der Leiste) -->
-<div class="eingabe-bereich" id="eingabeBereich" hidden>
-  <div class="vorschlaege" id="vorschlaege"></div>
-  <form class="eingabe" id="eingabeForm" autocomplete="off">
-    <input id="frageFeld" type="text" placeholder="Frag mich etwas zum Eurojackpot …" enterkeyhint="send" autocomplete="off">
-    <button type="submit" id="sendenKnopf" aria-label="Senden">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/></svg>
-    </button>
-  </form>
-</div>
+<footer>
+  <div class="innen zeile">
+    <span class="hinweis18"><b>18+</b> Glücksspiel kann süchtig machen. Hilfe: <a href="https://www.check-dein-spiel.de" rel="noopener">check-dein-spiel.de</a> · 0800 1 37 27 00 (kostenlos)</span>
+    <span>Lotto ist Zufall – keine App kann Zahlen vorhersagen. Die Ziehungen stammen von lotto.de.</span>
+  </div>
+</footer>
 
-<nav class="leiste" aria-label="Bereiche">
-  <button class="reiter aktiv" data-seite="ziehungen">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="8" r="3.2"/><circle cx="17" cy="8" r="3.2"/><circle cx="12" cy="16.5" r="3.2"/></svg>
-    <span>Ziehungen</span>
-  </button>
-  <button class="reiter" data-seite="assistent">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>
-    <span>Assistent</span>
-  </button>
-  <button class="reiter" data-seite="einstellungen">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
-    <span>Einstellungen</span>
-  </button>
-</nav>
-
-<div class="hinweis" id="hinweis" hidden></div>
+<script>
+(function () {
+  var ua = navigator.userAgent || '';
+  var geraet = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'iphone'
+    : /Android/.test(ua) ? 'android' : /Macintosh|Mac OS X/.test(ua) ? 'mac' : /Windows/.test(ua) ? 'windows' : '';
+  var karte = geraet && document.querySelector('[data-geraet="' + geraet + '"]');
+  if (karte) {
+    karte.classList.add('passt');
+    var link = karte.querySelector('a.knopf');
+    var namen = { windows: 'Für Windows laden', android: 'Für Android laden', mac: 'Für Mac laden', iphone: 'Für iPhone installieren' };
+    var knopf = document.getElementById('hauptKnopf');
+    knopf.href = link.getAttribute('href');
+    document.getElementById('hauptText').textContent = namen[geraet];
+    document.getElementById('hauptNeben').innerHTML = 'Anderes Gerät? <a href="#geraete">Alle Versionen</a>';
+  }
+  var k = document.getElementById('kopieren');
+  k.addEventListener('click', function () {
+    var t = document.getElementById('quelleText').textContent;
+    var fertig = function () { k.textContent = 'Kopiert'; setTimeout(function () { k.textContent = 'Kopieren'; }, 1600); };
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(fertig, function () {});
+  });
+  document.querySelector('a[href="#iphone"]').addEventListener('click', function () { document.getElementById('iphone').open = true; });
+  if (location.hash === '#iphone') document.getElementById('iphone').open = true;
+})();
+</script>
 </body>
 </html>
