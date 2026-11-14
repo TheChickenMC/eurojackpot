@@ -24,6 +24,15 @@
       },
       "versions": [
         {
+          "version": "2.14",
+          "buildVersion": "33613792",
+          "date": "2026-11-14T14:16:34Z",
+          "localizedDescription": "- Neu: Ziehungstabelle zurücksetzen – danach stehen wieder genau die Ziehungen von lotto.de da: eigene Einträge und Änderungen fallen weg, gelöschte kommen zurück, Suche leer, neueste oben\n- Am PC über den Knopf „Zurücksetzen“ oder im Menü „Tabelle zurücksetzen …“ (mit Rückgängig), am Handy über „Tabelle zurücksetzen“ über der Liste – vorher fragt die App nach\n- Unter der Haube: vieles für kommende Funktionen vorbereitet, kleinere Verbesserungen",
+          "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.14/EuroJackpot.ipa",
+          "size": 665590,
+          "minOSVersion": "15.0"
+        },
+        {
           "version": "2.13",
           "buildVersion": "33576237",
           "date": "2026-10-19T12:22:48Z",
@@ -42,11 +51,11 @@
           "minOSVersion": "15.0"
         }
       ],
-      "version": "2.13",
-      "versionDate": "2026-10-19T12:22:48Z",
-      "versionDescription": "- Neu: Eurojackpot für den Mac – EuroJackpot-Mac.dmg für Macs mit Apple-Chip, EuroJackpot-Mac-Intel.dmg für Intel-Macs, mit lokaler KI und automatischen Updates\n- Viel schlauere KI: unter „KI-Modell“ gibt es jetzt größere Modelle (Gemma 4 und Qwen3.5 von 4B bis 35B) – die App empfiehlt das passende für deinen Arbeitsspeicher\n- KI-Modelle suchen: passende Modelle von Hugging Face finden und mit einem Klick installieren – geladene Modelle jederzeit wechseln oder löschen\n- KI-Assistent zuverlässiger: Wiederholt sich ein Modell, wird abgebrochen, und erfundene Lotto-Aussagen kleiner Modelle ersetzt die App durch echte Zahlen",
-      "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.13/EuroJackpot.ipa",
-      "size": 650860
+      "version": "2.14",
+      "versionDate": "2026-11-14T14:16:34Z",
+      "versionDescription": "- Neu: Ziehungstabelle zurücksetzen – danach stehen wieder genau die Ziehungen von lotto.de da: eigene Einträge und Änderungen fallen weg, gelöschte kommen zurück, Suche leer, neueste oben\n- Am PC über den Knopf „Zurücksetzen“ oder im Menü „Tabelle zurücksetzen …“ (mit Rückgängig), am Handy über „Tabelle zurücksetzen“ über der Liste – vorher fragt die App nach\n- Unter der Haube: vieles für kommende Funktionen vorbereitet, kleinere Verbesserungen",
+      "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.14/EuroJackpot.ipa",
+      "size": 665590
     }
   ]
 }
