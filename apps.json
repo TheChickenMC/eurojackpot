@@ -24,6 +24,15 @@
       },
       "versions": [
         {
+          "version": "2.15",
+          "buildVersion": "33613853",
+          "date": "2026-11-14T15:17:16Z",
+          "localizedDescription": "- Schöneres Kreispfeil-Symbol (Aktualisieren/Zurücksetzen): der Kreis endet jetzt sauber in der Pfeilspitze\n- Kleine Darstellungsfehler behoben\n- Sicherheit verbessert: strengere Prüfung von Antworten und Adressen aus dem Internet",
+          "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.15/EuroJackpot.ipa",
+          "size": 667535,
+          "minOSVersion": "15.0"
+        },
+        {
           "version": "2.14",
           "buildVersion": "33613792",
           "date": "2026-11-14T14:16:34Z",
@@ -51,11 +60,11 @@
           "minOSVersion": "15.0"
         }
       ],
-      "version": "2.14",
-      "versionDate": "2026-11-14T14:16:34Z",
-      "versionDescription": "- Neu: Ziehungstabelle zurücksetzen – danach stehen wieder genau die Ziehungen von lotto.de da: eigene Einträge und Änderungen fallen weg, gelöschte kommen zurück, Suche leer, neueste oben\n- Am PC über den Knopf „Zurücksetzen“ oder im Menü „Tabelle zurücksetzen …“ (mit Rückgängig), am Handy über „Tabelle zurücksetzen“ über der Liste – vorher fragt die App nach\n- Unter der Haube: vieles für kommende Funktionen vorbereitet, kleinere Verbesserungen",
-      "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.14/EuroJackpot.ipa",
-      "size": 665590
+      "version": "2.15",
+      "versionDate": "2026-11-14T15:17:16Z",
+      "versionDescription": "- Schöneres Kreispfeil-Symbol (Aktualisieren/Zurücksetzen): der Kreis endet jetzt sauber in der Pfeilspitze\n- Kleine Darstellungsfehler behoben\n- Sicherheit verbessert: strengere Prüfung von Antworten und Adressen aus dem Internet",
+      "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.15/EuroJackpot.ipa",
+      "size": 667535
     }
   ]
 }
