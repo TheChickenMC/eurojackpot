@@ -1,6 +1,6 @@
 # Baut die iPhone-App (EuroJackpot.ipa) auf einem Mac von GitHub - zu Hause gibt es keinen Mac. veroeffentlichen.bat
 # startet das nach jedem Release (werkzeuge\IphoneApp.ps1). Die App ist ein Rahmen um die Browser-Version (Branch
-# gh-pages, dieselbe Rechnung wie am PC und am Handy). Vor dem Hochladen klickt sich ein Selbsttest im iPhone-Simulator
+# app-inhalt - nicht als Webseite veroeffentlicht, dieselbe Rechnung wie am PC und am Handy). Vor dem Hochladen klickt sich ein Selbsttest im iPhone-Simulator
 # durch die App - die Bildschirmfotos liegen danach beim Lauf unter "Artifacts" (iphone-test).
 name: iPhone-App
 
@@ -15,7 +15,7 @@ on:
         required: true
       inhalt:
         description: 'Branch mit der fertigen Browser-Version'
-        default: gh-pages
+        default: app-inhalt
       hochladen:
         description: 'EuroJackpot.ipa an das Release haengen und die Quelle apps.json aktualisieren'
         type: boolean

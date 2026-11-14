@@ -2,6 +2,8 @@
 
 Alle Eurojackpot-Ziehungen, Statistik, Diagramme, Vorhersage und ein Assistent, der Fragen zu den Zahlen beantwortet.
 
+**Download-Seite:** [thechickenmc.github.io/eurojackpot](https://thechickenmc.github.io/eurojackpot/)
+
 | Gerät | So geht's |
 |---|---|
 | **Windows** | [EuroJackpot.exe](https://github.com/TheChickenMC/eurojackpot/releases/latest/download/EuroJackpot.exe) herunterladen und starten – keine Installation nötig |
