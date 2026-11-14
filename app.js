@@ -1,6 +1,6 @@
 // Eurojackpot im Browser und in der iPhone-App – Oberfläche. Rechnen tut der Rechen-Assistent im Web Worker (rechner.js → rechner-kern.js,
 // von TeaVM aus demselben Java-Code übersetzt wie am PC und am Handy).
-const VERSION = '2.14';
+const VERSION = '2.15';
 // In der iPhone-App setzt die App das vorher (ios/Quellen/WebAnsicht.swift): {plattform, version, build}
 const APP = window.EJ_APP || null;
 const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
@@ -529,8 +529,10 @@ function aboZeigen() {
     + (z.bestaetigt === 'noch nie' ? 'noch nicht bestätigt' : 'zuletzt bestätigt ' + z.bestaetigt) : '';
   $('proFeldZeile').hidden = !!z.pro;
   $('proFreiKnopf').hidden = !!z.pro;
-  $('proKaufenKnopf').hidden = !!z.pro;
-  $('proKaufenKnopf').href = aboInfo.kaufen;
+  const kaufen = (aboInfo.kaufen || '').startsWith('https://');
+  $('proKaufenKnopf').hidden = !!z.pro || !kaufen;
+  if (kaufen) $('proKaufenKnopf').href = aboInfo.kaufen;
+  else $('proKaufenKnopf').removeAttribute('href');
   $('proKaufenKnopf').textContent = 'PRO holen – ' + aboInfo.preis;
   const verwalten = (aboInfo.verwalten || '').startsWith('https://');
   $('proVerwaltenKnopf').hidden = !verwalten;
