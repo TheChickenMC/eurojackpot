@@ -12,6 +12,14 @@ import WebKit
 final class Inhalt: NSObject, WKURLSchemeHandler, URLSessionDataDelegate {
     static let schema = "eurojackpot"
     private static let netz = Selbsttest.netzBasis ?? URL(string: "https://thechickenmc.github.io/eurojackpot/")!
+    /// Nur diese Ziele darf /leitung erreichen (Online-KI, Abo-Prüfung, Ziehungen) – sonst wäre es ein offener Durchreicher.
+    private static let erlaubteZiele: Set<String> = ["api.anthropic.com", "api.openai.com", "generativelanguage.googleapis.com",
+                                                     "api.polar.sh", "api.lemonsqueezy.com", "www.lotto.de"]
+
+    static func zielErlaubt(_ url: URL?) -> Bool {
+        guard let url = url, url.scheme?.lowercased() == "https", let host = url.host?.lowercased() else { return false }
+        return erlaubteZiele.contains(host) && url.user == nil && url.password == nil && (url.port == nil || url.port == 443)
+    }
 
     private let ordner = Bundle.main.resourceURL!.appendingPathComponent("Inhalt", isDirectory: true).standardizedFileURL
     private lazy var leitungen: URLSession = {
@@ -147,7 +155,7 @@ final class Inhalt: NSObject, WKURLSchemeHandler, URLSessionDataDelegate {
     private func leitung(_ aufgabe: WKURLSchemeTask, _ url: URL) {
         let quelle = aufgabe.request
         guard let text = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "ziel" })?.value,
-              let ziel = URL(string: text), ziel.scheme?.lowercased() == "https" else {
+              let ziel = URL(string: text), Self.zielErlaubt(ziel) else {
             antworten(aufgabe, 400, "text/plain; charset=utf-8", Data("ungültiges Ziel".utf8))
             return
         }
@@ -181,6 +189,12 @@ final class Inhalt: NSObject, WKURLSchemeHandler, URLSessionDataDelegate {
             daten.append(puffer, count: n)
         }
         return (daten, "httpBodyStream")
+    }
+
+    /// Weiterleitungen nur zu erlaubten Zielen (im Selbsttest auf den Test-Server).
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+                    newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+        completionHandler(Self.zielErlaubt(request.url) || Selbsttest.an ? request : nil)
     }
 
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse,
