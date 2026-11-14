@@ -148,6 +148,21 @@ self.onmessage = (ereignis) => {
       case 'vergleich':
         ergebnis(d.id, kern.vergleich(d.fragen, d.heute));
         break;
+      case 'aboEinstellen':
+        ergebnis(d.id, JSON.parse(kern.aboEinstellen(d.text || '')));
+        break;
+      case 'aboStand':
+        ergebnis(d.id, JSON.parse(kern.aboStand(d.stand || '', d.jetzt)));
+        break;
+      case 'aboAktivieren':
+        kern.aboAktivieren(d.id, d.schluessel || '', d.geraet || '', d.stand || '', d.jetzt);
+        break;
+      case 'aboPruefen':
+        kern.aboPruefen(d.id, d.stand || '', d.jetzt);
+        break;
+      case 'aboAbmelden':
+        kern.aboAbmelden(d.id, d.stand || '');
+        break;
       default:
         ergebnis(d.id, null);
     }

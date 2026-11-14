@@ -191,3 +191,19 @@ body.tastatur .leiste { display: none; }
   box-shadow: 0 4px 16px var(--schatten); font-size: 14.5px; display: flex; align-items: center; gap: 12px;
 }
 .hinweis button { border: 0; background: rgba(255, 255, 255, 0.18); color: #fff; border-radius: 10px; padding: 6px 10px; font-weight: 600; flex: none; }
+
+/* ---------- PRO-Abo */
+a.knopf { display: inline-block; text-decoration: none; text-align: center; }
+.knopf.gold { background: var(--gold); color: #14213D; }
+.ki-status.gut { color: var(--gruen); }
+.ki-status.schlecht { color: var(--fehler); }
+.pro-sperre { text-align: center; padding: 22px 18px; }
+.pro-sperre .schloss { width: 44px; height: 44px; color: var(--gold); }
+.pro-sperre h3 { margin: 6px 0 8px; font-size: 19px; }
+.pro-sperre .knoepfe { justify-content: center; }
+.pro-links a { color: var(--akzent); font-weight: 600; margin-right: 14px; }
+.reiter { position: relative; }
+.reiter.pro-schloss::after {
+  content: ""; position: absolute; top: 5px; left: calc(50% + 8px); width: 15px; height: 15px; border-radius: 50%;
+  background: var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2314213D' stroke-width='2.6' stroke-linecap='round'%3E%3Crect x='6' y='11' width='12' height='9' rx='2'/%3E%3Cpath d='M9 11V8a3 3 0 0 1 6 0v3'/%3E%3C/svg%3E") center / 11px no-repeat;
+}

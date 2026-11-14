@@ -1,6 +1,6 @@
 // Eurojackpot im Browser und in der iPhone-App – Oberfläche. Rechnen tut der Rechen-Assistent im Web Worker (rechner.js → rechner-kern.js,
 // von TeaVM aus demselben Java-Code übersetzt wie am PC und am Handy).
-const VERSION = '2.13';
+const VERSION = '2.14';
 // In der iPhone-App setzt die App das vorher (ios/Quellen/WebAnsicht.swift): {plattform, version, build}
 const APP = window.EJ_APP || null;
 const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
@@ -29,6 +29,8 @@ const speicher = {
   },
 };
 const KI = { schluessel: 'ej.ki.schluessel', modell: 'ej.ki.modell', gewaehlt: 'ej.ki.gewaehlt', name: 'ej.ki.name', aus: 'ej.ki.aus' };
+const ABO = { stand: 'ej.abo.stand', einstellung: 'ej.abo.einstellung' };
+const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 // ---------- Rechner (Web Worker)
 let rechner = null;
@@ -277,7 +279,9 @@ async function neuesGespraech() {
 async function fragen(text) {
   const f = (text || '').trim();
   if (!f || wartet) return;
+  await aboStart;
   if (aktiveSeite !== 'assistent') seiteZeigen('assistent');
+  if (aboGesperrt()) return; // ohne PRO: die Sperrkarte steht da
   $('frageFeld').value = '';
   blase('ich', f);
   vorschlaegeZeigen([]);
@@ -411,6 +415,172 @@ function kiEntfernen() {
   neuesGespraech();
 }
 
+// ---------- PRO-Abo: bezahlt wird beim Zahlungsanbieter, die App prüft nur den Lizenzschlüssel (Abo.java im Rechner).
+// Name und Bankverbindung des Verkäufers stehen nirgends in der App. Ohne Angaben in abo.properties ist alles frei.
+let aboInfo = { an: false };
+let aboZustand = { pro: true };
+let aboArbeitet = false;
+let aboBereit;
+const aboStart = new Promise((ok) => (aboBereit = ok));
+
+function aboGesperrt() {
+  return !!aboInfo.an && !aboZustand.pro;
+}
+
+async function aboStarten() {
+  try {
+    let text = null;
+    const ab = new AbortController();
+    const uhr = setTimeout(() => ab.abort(), 6000); // schlechtes Netz: nicht ewig warten
+    try {
+      const r = await fetch('abo.properties', { cache: 'no-cache', signal: ab.signal });
+      if (r.ok) text = await r.text();
+    } catch (e) {
+      // offline
+    } finally {
+      clearTimeout(uhr);
+    }
+    if (text == null) text = speicher.holen(ABO.einstellung) || ''; // offline: die zuletzt bekannten Angaben
+    else speicher.setzen(ABO.einstellung, text);
+    aboInfo = (await rufen('aboEinstellen', { text })) || { an: false };
+    await aboAuffrischen();
+  } finally {
+    aboBereit();
+  }
+  aboTakt();
+}
+
+async function aboAuffrischen() {
+  if (aboInfo.an) aboZustand = (await rufen('aboStand', { stand: speicher.holen(ABO.stand) || '', jetzt: Date.now() })) || { pro: false };
+  else aboZustand = { pro: true };
+  aboZeigen();
+}
+
+/** Alle 6 Stunden beim Anbieter nachfragen, ob das Abo noch läuft. */
+function aboTakt() {
+  if (!aboInfo.an || !aboZustand.hatSchluessel || !aboZustand.faellig || aboArbeitet) return;
+  aboRufen('aboPruefen', {}, false);
+}
+
+async function aboRufen(art, daten, zeigen) {
+  const vorher = speicher.holen(ABO.stand) || '';
+  const warPro = aboZustand.pro;
+  aboArbeitet = true;
+  if (zeigen) aboMeldung('Frage ' + aboInfo.anbieter + ' …', true);
+  aboZeigen();
+  const r = await rufen(art, { stand: vorher, jetzt: Date.now(), ...daten });
+  aboArbeitet = false;
+  // nur übernehmen, wenn in der Zwischenzeit nicht ein anderer Schlüssel eingegeben wurde
+  if (r && r.stand != null && (speicher.holen(ABO.stand) || '') === vorher) speicher.setzen(ABO.stand, r.stand);
+  await aboAuffrischen();
+  if (zeigen) aboMeldung(r ? r.text : 'Das hat nicht geklappt – bitte später noch einmal.', !!(r && r.ok));
+  if (warPro && !aboZustand.pro && aboZustand.abgelaufen) zeigeHinweis('Dein PRO-Abo ist beendet – der Assistent ist wieder gesperrt.');
+  return r;
+}
+
+function aboMeldung(text, gut) {
+  const m = $('proMeldung');
+  m.hidden = !text;
+  m.textContent = text || '';
+  m.classList.toggle('gut', !!gut);
+}
+
+function geraetName() {
+  return 'EuroJackpot ' + (APP ? 'iPhone' : 'Browser') + ' · seit ' + new Date().toLocaleDateString('de-DE');
+}
+
+function aboZeigen() {
+  const z = aboZustand;
+  const gesperrt = aboGesperrt();
+  for (const r of document.querySelectorAll('.reiter[data-seite="assistent"]')) r.classList.toggle('pro-schloss', gesperrt);
+  const sp = $('aboSperre');
+  sp.hidden = !gesperrt;
+  $('kiZeile').hidden = gesperrt;
+  $('verlauf').hidden = gesperrt;
+  if (gesperrt) {
+    const ki = (aboInfo.vorteile || []).find((v) => v[0] === 'KI-Assistent');
+    sp.innerHTML = '<svg class="schloss" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/>'
+      + '<path d="M8 11V8.5a4 4 0 0 1 8 0V11"/><circle cx="12" cy="16" r="0.8"/></svg>'
+      + '<h3>Der Assistent gehört zu PRO</h3>'
+      + (ki ? '<p>' + escHtml(ki[1]) + '.</p>' : '')
+      + (z.hatSchluessel ? '<p class="ki-status schlecht">' + escHtml(z.text) + '</p>' : '')
+      + '<p><b>' + escHtml(aboInfo.preisText) + ' · jederzeit kündbar</b></p>'
+      + '<div class="knoepfe"><a class="knopf gold" target="_blank" rel="noopener" href="' + escHtml(aboInfo.kaufen) + '">PRO holen</a>'
+      + '<button class="knopf" id="sperreSchluessel">' + (z.hatSchluessel ? 'PRO-Einstellungen' : 'Ich habe einen Schlüssel') + '</button></div>'
+      + '<p class="klein">' + escHtml(aboInfo.ehrlich) + '</p>';
+    $('sperreSchluessel').onclick = () => seiteZeigen('einstellungen');
+  }
+  if (aktiveSeite === 'assistent') {
+    $('eingabeBereich').hidden = gesperrt;
+    $('neuKnopf').hidden = gesperrt;
+    document.body.classList.toggle('mit-eingabe', !gesperrt);
+  }
+
+  const an = !!aboInfo.an;
+  $('proTitel').hidden = !an;
+  $('proKarte').hidden = !an;
+  if (!an) return;
+  $('proStatus').textContent = z.pro || z.hatSchluessel ? z.text : 'Kein PRO – der Assistent ist gesperrt';
+  $('proStatus').className = 'ki-status ' + (z.pro ? 'gut' : 'schlecht');
+  $('proPreis').textContent = aboInfo.preisText + ' · jederzeit kündbar';
+  $('proVorteile').innerHTML = (aboInfo.vorteile || []).map((v) => '<li><b>' + escHtml(v[0]) + '</b> – ' + escHtml(v[1]) + '</li>').join('');
+  $('proSchluessel').hidden = !z.hatSchluessel;
+  $('proSchluessel').textContent = z.hatSchluessel ? 'Lizenzschlüssel: ' + z.verdeckt + ' · '
+    + (z.bestaetigt === 'noch nie' ? 'noch nicht bestätigt' : 'zuletzt bestätigt ' + z.bestaetigt) : '';
+  $('proFeldZeile').hidden = !!z.pro;
+  $('proFreiKnopf').hidden = !!z.pro;
+  $('proKaufenKnopf').hidden = !!z.pro;
+  $('proKaufenKnopf').href = aboInfo.kaufen;
+  $('proKaufenKnopf').textContent = 'PRO holen – ' + aboInfo.preis;
+  const verwalten = (aboInfo.verwalten || '').startsWith('https://');
+  $('proVerwaltenKnopf').hidden = !verwalten;
+  if (verwalten) $('proVerwaltenKnopf').href = aboInfo.verwalten;
+  $('proPruefenKnopf').hidden = !z.hatSchluessel;
+  $('proAbmeldenKnopf').hidden = !z.hatSchluessel;
+  for (const id of ['proFreiKnopf', 'proPruefenKnopf', 'proAbmeldenKnopf', 'proFeld']) $(id).disabled = aboArbeitet;
+  $('proBedingungen').textContent = aboInfo.bedingungen;
+  $('proEhrlich').textContent = aboInfo.ehrlich + ' Bezahlung, Rechnung und Kündigung laufen über ' + aboInfo.anbieter + '.';
+  const links = [['AGB', aboInfo.agb], ['Datenschutz', aboInfo.datenschutz], ['Impressum', aboInfo.impressum]]
+    .filter((l) => (l[1] || '').startsWith('https://'));
+  $('proLinks').hidden = !links.length;
+  $('proLinks').innerHTML = links.map((l) => '<a target="_blank" rel="noopener" href="' + escHtml(l[1]) + '">' + l[0] + '</a>').join('');
+}
+
+async function aboFreischalten() {
+  const schluessel = $('proFeld').value.trim();
+  if (!schluessel) {
+    aboMeldung('Bitte erst den Lizenzschlüssel eingeben.');
+    return;
+  }
+  const r = await aboRufen('aboAktivieren', { schluessel, geraet: geraetName() }, true);
+  if (r && r.ok) {
+    $('proFeld').value = '';
+    neuesGespraech();
+  }
+}
+
+// Abmelden mit zweitem Tippen bestätigen (in der iPhone-App gibt es kein confirm())
+let abmeldenUhr = 0;
+function aboAbmelden() {
+  const k = $('proAbmeldenKnopf');
+  if (!k.dataset.sicher) {
+    k.dataset.sicher = '1';
+    k.textContent = 'Wirklich abmelden? Nochmal tippen';
+    aboMeldung('PRO ist dann auf diesem Gerät aus, bis du den Schlüssel wieder eingibst. Dein Abo läuft weiter – kündigen kannst du '
+      + 'unter „Abo verwalten / kündigen“.');
+    clearTimeout(abmeldenUhr);
+    abmeldenUhr = setTimeout(() => {
+      delete k.dataset.sicher;
+      k.textContent = 'Von diesem Gerät abmelden';
+    }, 5000);
+    return;
+  }
+  clearTimeout(abmeldenUhr);
+  delete k.dataset.sicher;
+  k.textContent = 'Von diesem Gerät abmelden';
+  aboRufen('aboAbmelden', {}, true);
+}
+
 // ---------- Seiten und Leiste
 let aktiveSeite = 'ziehungen';
 const scrollStand = {};
@@ -425,9 +595,10 @@ function seiteZeigen(name) {
   for (const s of ['ziehungen', 'assistent', 'einstellungen']) $('seite-' + s).hidden = s !== name;
   for (const r of document.querySelectorAll('.reiter')) r.classList.toggle('aktiv', r.dataset.seite === name);
   $('seitenTitel').textContent = SEITEN_TITEL[name];
-  $('neuKnopf').hidden = name !== 'assistent';
-  $('eingabeBereich').hidden = name !== 'assistent';
-  document.body.classList.toggle('mit-eingabe', name === 'assistent');
+  const zu = name === 'assistent' && aboGesperrt();
+  $('neuKnopf').hidden = name !== 'assistent' || zu;
+  $('eingabeBereich').hidden = name !== 'assistent' || zu;
+  document.body.classList.toggle('mit-eingabe', name === 'assistent' && !zu);
   if (name === 'assistent') {
     $('stand').textContent = 'Fragen zu Zahlen, Ziehungen und Chancen';
     eingabeHoeheMerken();
@@ -436,7 +607,10 @@ function seiteZeigen(name) {
     standZeigen();
     window.scrollTo(0, scrollStand[name] || 0);
   }
-  if (name === 'einstellungen') kiZeigen();
+  if (name === 'einstellungen') {
+    kiZeigen();
+    if (aboInfo.an) aboAuffrischen();
+  }
 }
 
 function eingabeHoeheMerken() {
@@ -556,6 +730,14 @@ function start() {
     neuesGespraech();
   };
   $('aktualisierenKnopf').onclick = () => ziehungenLaden(false);
+  $('proFreiKnopf').onclick = aboFreischalten;
+  $('proFeld').onkeydown = (e) => {
+    if (e.key === 'Enter') aboFreischalten();
+  };
+  $('proPruefenKnopf').onclick = () => aboRufen('aboPruefen', {}, true);
+  $('proAbmeldenKnopf').onclick = aboAbmelden;
+  $('proKaufenKnopf').addEventListener('click', () => aboMeldung('Nach dem Kauf kommt dein Lizenzschlüssel per E-Mail – kopier ihn hier hinein.', true));
+  setInterval(() => aboAuffrischen().then(aboTakt), 10 * 60 * 1000);
   // Kreispfeil neben der Suche – wie am Handy (der Assistent verweist darauf)
   $('neuLadenKnopf').onclick = async () => {
     const k = $('neuLadenKnopf');
@@ -570,10 +752,12 @@ function start() {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
     if (Date.now() - geladenUm > 30 * 60 * 1000) ziehungenLaden(true);
+    if (aboInfo.an) aboAuffrischen().then(aboTakt);
     if (APP && Date.now() - updateGeprueftUm > 12 * 60 * 60 * 1000) appUpdatePruefen();
   });
   tastaturBeachten();
   rechnerStarten();
+  aboStarten();
   kiAnwenden();
   naechsteZeigen();
   ziehungenLaden(true).then(() => neuesGespraech());

@@ -48,12 +48,38 @@
 
   <!-- Assistent -->
   <section class="seite" id="seite-assistent" hidden>
+    <div class="karte pro-sperre" id="aboSperre" hidden></div>
     <div class="ki-zeile" id="kiZeile"></div>
     <div class="verlauf" id="verlauf" aria-live="polite"></div>
   </section>
 
   <!-- Einstellungen -->
   <section class="seite" id="seite-einstellungen" hidden>
+    <h2 id="proTitel" hidden>PRO</h2>
+    <div class="karte" id="proKarte" hidden>
+      <div class="ki-status" id="proStatus"></div>
+      <p><b id="proPreis"></b></p>
+      <ul class="anbieter" id="proVorteile"></ul>
+      <p class="klein">PRO gilt mit demselben Schlüssel auf PC, Mac, Android und iPhone. Hier schaltet es den Assistenten frei.</p>
+      <p class="klein" id="proSchluessel" hidden></p>
+      <label class="feld" id="proFeldZeile">
+        <span>Lizenzschlüssel aus der Kauf-E-Mail</span>
+        <input id="proFeld" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false"
+               placeholder="Lizenzschlüssel einfügen">
+      </label>
+      <div class="meldung" id="proMeldung" hidden></div>
+      <div class="knoepfe">
+        <button class="knopf haupt" id="proFreiKnopf">Freischalten</button>
+        <a class="knopf gold" id="proKaufenKnopf" target="_blank" rel="noopener">PRO holen</a>
+        <a class="knopf" id="proVerwaltenKnopf" target="_blank" rel="noopener" hidden>Abo verwalten / kündigen</a>
+        <button class="knopf" id="proPruefenKnopf" hidden>Jetzt prüfen</button>
+        <button class="knopf" id="proAbmeldenKnopf" hidden>Von diesem Gerät abmelden</button>
+      </div>
+      <p class="klein" id="proBedingungen"></p>
+      <p class="klein" id="proEhrlich"></p>
+      <p class="klein pro-links" id="proLinks"></p>
+    </div>
+
     <h2>Online-KI</h2>
     <div class="karte">
       <p class="erklaerung">Ohne KI beantwortet der eingebaute Assistent deine Fragen – er versteht schon sehr viel und rechnet alles
