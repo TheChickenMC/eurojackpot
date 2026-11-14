@@ -24,6 +24,15 @@
       },
       "versions": [
         {
+          "version": "2.16",
+          "buildVersion": "33613880",
+          "date": "2026-11-14T15:42:07Z",
+          "localizedDescription": "- Neue Download-Seite für alle Geräte – die Browser-Version gibt es nicht mehr",
+          "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.16/EuroJackpot.ipa",
+          "size": 667455,
+          "minOSVersion": "15.0"
+        },
+        {
           "version": "2.15",
           "buildVersion": "33613853",
           "date": "2026-11-14T15:17:16Z",
@@ -60,11 +69,11 @@
           "minOSVersion": "15.0"
         }
       ],
-      "version": "2.15",
-      "versionDate": "2026-11-14T15:17:16Z",
-      "versionDescription": "- Schöneres Kreispfeil-Symbol (Aktualisieren/Zurücksetzen): der Kreis endet jetzt sauber in der Pfeilspitze\n- Kleine Darstellungsfehler behoben\n- Sicherheit verbessert: strengere Prüfung von Antworten und Adressen aus dem Internet",
-      "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.15/EuroJackpot.ipa",
-      "size": 667535
+      "version": "2.16",
+      "versionDate": "2026-11-14T15:42:07Z",
+      "versionDescription": "- Neue Download-Seite für alle Geräte – die Browser-Version gibt es nicht mehr",
+      "downloadURL": "https://github.com/TheChickenMC/eurojackpot/releases/download/v2.16/EuroJackpot.ipa",
+      "size": 667455
     }
   ]
 }
